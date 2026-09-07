@@ -64,12 +64,10 @@
         }                                                                                            \
     } while (0)
 
-/*
-Pop all avaliable annotations from the current stack and link them to a node.
+/* Pop all avaliable annotations from the current stack and link them to a node.
 Params:
     - `ctx` - AST context (ast_ctx_t).
-    - `nd` - AST node (ast_node_t).
-*/
+    - `nd` - AST node (ast_node_t). */
 #define DUMP_ANNOTATION_TO_NODE(ctx, nd)                                                             \
     annotation_t* annot;                                                                             \
     while (ctx->annots.top > ctx->an_off - 1 && stack_pop(&ctx->annots, (void**)&annot)) {           \

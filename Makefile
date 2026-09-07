@@ -16,7 +16,7 @@ DOCDIR 					?= $(DATADIR)/doc/cpl
 BASH_COMPLETION_DIR 	?= $(DATADIR)/bash-completion/completions
 ZSH_COMPLETION_DIR 		?= $(DATADIR)/zsh/site-functions
 FISH_COMPLETION_DIR 	?= $(DATADIR)/fish/vendor_completions.d
-VERSION 				?= 3.6_X
+VERSION 				?= 3.7_X
 
 BUILD 					?= debug
 AVAILABLE_MEMORY 		?= 67108864

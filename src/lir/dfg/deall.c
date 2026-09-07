@@ -33,8 +33,8 @@ static int _scope_pass(cfg_func_t* fb) {
             case LIR_ENDSCOPE: {
                 list_t* scope_defs;
                 if (!stack_pop(&scopes, (void**)&scope_defs)) break;
-                foreach (long vid, scope_defs) {
-                    LIR_insert_block_before(LIR_create_block(LIR_VRDEALL, LIR_SUBJ_CONST(vid), NULL, NULL), lh);
+                foreach (symbol_id_t v_id, scope_defs) {
+                    LIR_insert_block_before(LIR_create_block(LIR_VRDEALL, LIR_SUBJ_CONST(v_id), NULL, NULL), lh);
                 }
 
                 list_free(scope_defs);

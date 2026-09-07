@@ -300,10 +300,8 @@ Params:
 Returns 1 if both subjects are aliases of the same register */
 static inline int _same_register_subject(lir_subject_t* a, lir_subject_t* b) {
     return (
-        a && b &&
-        a->t == LIR_REGISTER &&
-        b->t == LIR_REGISTER &&
-        _register_key(a->storage.reg.reg) == _register_key(b->storage.reg.reg)
+        a && b && a->t == LIR_REGISTER && b->t == LIR_REGISTER &&
+        (_register_key(a->storage.reg.reg) == _register_key(b->storage.reg.reg))
     );
 }
 
@@ -510,11 +508,11 @@ Params:
     - `op` - LIR operation to inspect.
 
 Returns 1 when all register facts must be dropped */
-static int _register_facts_clobbered_by_op(lir_operation_t op) {
+static inline int _register_facts_clobbered_by_op(lir_operation_t op) {
     switch (op) {
         case LIR_FCLL: case LIR_ECLL: case LIR_SYSC:
         case LIR_RAW:  case LIR_RAWASM: return 1;
-        default:       return 0;
+        default:                        return 0;
     }
 }
 
@@ -523,7 +521,7 @@ Params:
     - `op` - LIR operation to inspect.
 
 Returns 1 when farg register facts must be killed */
-static int _register_op_writes_farg(lir_operation_t op) {
+static inline int _register_op_writes_farg(lir_operation_t op) {
     switch (op) {
         case LIR_SETL: case LIR_SETG: case LIR_STLE:
         case LIR_STGE: case LIR_SETE: case LIR_STNE:
@@ -544,23 +542,24 @@ static int _is_register_copy_candidate(lir_block_t* lh, long* src_size) {
         !lh || lh->unused ||
         (lh->op != LIR_iMOV && lh->op != LIR_phiMOV) ||
         !lh->farg || lh->farg->t != LIR_REGISTER ||
-        !lh->sarg ||
-        _is_reserved_stack_register(lh->farg)
+        !lh->sarg || _is_reserved_stack_register(lh->farg)
     ) return 0;
-
     switch (lh->sarg->t) {
-        case LIR_REGISTER:
-            if (_same_register_subject(lh->farg, lh->sarg)) return 0;
-            if (_is_reserved_stack_register(lh->sarg)) return 0;
-            if (lh->farg->size != lh->sarg->size) return 0;
+        case LIR_REGISTER: {
+            if (
+                _same_register_subject(lh->farg, lh->sarg) ||
+                _is_reserved_stack_register(lh->sarg)      ||
+                (lh->farg->size != lh->sarg->size)
+            ) return 0;
             if (src_size) *src_size = lh->sarg->size;
             return 1;
+        }
         case LIR_CONSTVAL:
-        case LIR_NUMBER:
+        case LIR_NUMBER: {
             if (src_size) *src_size = lh->farg->size;
             return 1;
-        default:
-            return 0;
+        }
+        default: return 0;
     }
 }
 
@@ -578,16 +577,25 @@ static int _transfer_register_instruction(lir_block_t* lh, map_t* state) {
         return 1;
     }
 
-    if (_register_op_writes_farg(lh->op) && lh->farg && lh->farg->t == LIR_REGISTER) {
-        _map_kill_register(state, lh->farg->storage.reg.reg);
-    }
-    if (lh->op == LIR_XCHG && lh->sarg && lh->sarg->t == LIR_REGISTER) {
-        _map_kill_register(state, lh->sarg->storage.reg.reg);
-    }
+    if (
+        _register_op_writes_farg(lh->op) && 
+        lh->farg && lh->farg->t == LIR_REGISTER
+    ) _map_kill_register(state, lh->farg->storage.reg.reg);
+    
+    if (
+        lh->op == LIR_XCHG && 
+        lh->sarg && lh->sarg->t == LIR_REGISTER
+    ) _map_kill_register(state, lh->sarg->storage.reg.reg);
+    
     if (lh->op == LIR_CDQ || lh->op == LIR_CQO) {
         _map_kill_register(state, RDX);
     }
-    if (lh->op == LIR_DIV || lh->op == LIR_iDIV || lh->op == LIR_iMOD) {
+    
+    if (
+        lh->op == LIR_DIV  || 
+        lh->op == LIR_iDIV || 
+        lh->op == LIR_iMOD
+    ) {
         _map_kill_register(state, RAX);
         _map_kill_register(state, RDX);
     }

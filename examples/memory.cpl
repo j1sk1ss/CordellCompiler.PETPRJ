@@ -19,8 +19,9 @@ function init() -> i0 {
     curr.next = NULL_MM_NODE;
 }
 
+@[inline(always)]
 function align8(i64 size) -> i64 {
-    return (size + 7) / 8 * 8;
+    (size + 7) / 8 * 8
 }
 
 function malloc(i64 size) -> ptr i0 {

@@ -15,7 +15,6 @@ static int _mark_used_variable_id(symbol_id_t id, sym_table_t* smt) {
 
 static int _mark_used_variable(lir_subject_t* s, sym_table_t* smt) {
     if (!s) return 0;
-
     switch (s->t) {
         case LIR_VARIABLE:
         case LIR_GLVARIABLE:

@@ -27,7 +27,7 @@ static inline void _NASMFMT_split_first_token(const char* line, const char** res
     const char* cursor = line;
     while (*cursor && !_NASMFMT_is_space(*cursor)) cursor++;
     *token_len = (size_t)(cursor - line);
-    *rest = _NASMFMT_skip_spaces(cursor);
+    *rest      = _NASMFMT_skip_spaces(cursor);
 }
 
 static inline int _NASMFMT_is_directive(const char* token, size_t len) {
@@ -39,14 +39,14 @@ static inline int _NASMFMT_is_directive(const char* token, size_t len) {
 }
 
 static inline int _NASMFMT_is_data_op(const char* token, size_t len) {
-    return _NASMFMT_token_is(token, len, "db")   ||
-           _NASMFMT_token_is(token, len, "dw")   ||
-           _NASMFMT_token_is(token, len, "dd")   ||
-           _NASMFMT_token_is(token, len, "dq")   ||
+    return _NASMFMT_token_is(token, len, "db")    ||
+           _NASMFMT_token_is(token, len, "dw")    ||
+           _NASMFMT_token_is(token, len, "dd")    ||
+           _NASMFMT_token_is(token, len, "dq")    ||
            _NASMFMT_token_is(token, len, "times") ||
-           _NASMFMT_token_is(token, len, "resb") ||
-           _NASMFMT_token_is(token, len, "resw") ||
-           _NASMFMT_token_is(token, len, "resd") ||
+           _NASMFMT_token_is(token, len, "resb")  ||
+           _NASMFMT_token_is(token, len, "resw")  ||
+           _NASMFMT_token_is(token, len, "resd")  ||
            _NASMFMT_token_is(token, len, "resq");
 }
 
@@ -57,7 +57,6 @@ static inline int NASMFMT_is_blank(const char* line) {
 static inline int _NASMFMT_is_label(const char* line) {
     size_t len = 0;
     while (line[len]) len++;
-
     while (len > 0 && _NASMFMT_is_space(line[len - 1])) len--;
     return len > 0 && line[len - 1] == ':';
 }
@@ -113,7 +112,6 @@ static inline void _NASMFMT_emit_command(FILE* output, const char* fmt, ...) {
     va_start(args, fmt);
     vsnprintf(buffer, sizeof(buffer), fmt, args);
     va_end(args);
-
     _NASMFMT_emit_formatted_line(output, buffer, 1);
 }
 
@@ -123,7 +121,6 @@ static inline void _NASMFMT_emit_part_command(FILE* output, const char* fmt, ...
     va_start(args, fmt);
     vsnprintf(buffer, sizeof(buffer), fmt, args);
     va_end(args);
-
     _NASMFMT_emit_formatted_line(output, buffer, 0);
 }
 

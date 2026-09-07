@@ -68,9 +68,7 @@ function printf(ptr i8 fmt, ...) -> i0 {
 
                 index += 1;
             }
-            default {
-                _putc(fmt[index]);
-            }
+            default _putc(fmt[index]);
         }
 
         index += 1;

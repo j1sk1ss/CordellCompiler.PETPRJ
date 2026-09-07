@@ -5,8 +5,7 @@ DEF - All new variables that defined first time
 USE - All variables that has been readed by someone
 
 IN  = union(USE, (OUT - DEF))
-OUT = union(IN successors)
-*/
+OUT = union(IN successors) */
 
 #include <lir/dfg.h>
 
@@ -85,13 +84,11 @@ int LIR_DFG_compute_usedef(cfg_ctx_t* cctx) {
     return 1;
 }
 
-/*
-Compute the 'OUT' set during the liveness analysis.
+/* Compute the 'OUT' set during the liveness analysis.
 Params:
     - `cfg` - CFG context.
 
-Returns 1 if succeeds.
-*/
+Returns 1 if succeeds. */
 static int _compute_out(cfg_block_t* cfg) {
     set_t out;
     set_init(&out, SET_CMP);
@@ -101,25 +98,25 @@ static int _compute_out(cfg_block_t* cfg) {
         set_free(&out);
         out = next_out;
     }
+
     if (cfg->jmp) {
         set_t next_out;
         set_union(&next_out, &out, &cfg->jmp->curr_in);
         set_free(&out);
         out = next_out;
     }
+    
     set_free(&cfg->curr_out);
     set_copy(&cfg->curr_out, &out);
     set_free(&out);
     return 1;
 }
 
-/*
-Compute the 'IN' set during the liveness analysis.
+/* Compute the 'IN' set during the liveness analysis.
 Params:
     - `cfg` - CFG context.
 
-Returns 1 if succeeds.
-*/
+Returns 1 if succeeds. */
 static int _compute_in(cfg_block_t* cfg) {
     set_t tmp;
     set_copy(&tmp, &cfg->curr_out);
@@ -175,12 +172,10 @@ typedef struct {
     char            done : 1;
 } phi_copy_t;
 
-/*
-Save the mutable payload of a LIR block into temporary storage.
+/* Save the mutable payload of a LIR block into temporary storage.
 Params:
     - `p` - Destination payload storage.
-    - `lh` - Source LIR block.
-*/
+    - `lh` - Source LIR block. */
 static inline void _save_payload(lir_block_t* p, lir_block_t* lh) {
     p->op     = lh->op;
     p->farg   = lh->farg;
@@ -189,12 +184,10 @@ static inline void _save_payload(lir_block_t* p, lir_block_t* lh) {
     p->unused = lh->unused;
 }
 
-/*
-Restore the mutable payload of a LIR block from temporary storage.
+/* Restore the mutable payload of a LIR block from temporary storage.
 Params:
     - `lh` - Destination LIR block.
-    - `p` - Source payload storage.
-*/
+    - `p` - Source payload storage. */
 static inline void _load_payload(lir_block_t* lh, lir_block_t* p) {
     lh->op     = p->op;
     lh->farg   = p->farg;
@@ -203,15 +196,13 @@ static inline void _load_payload(lir_block_t* lh, lir_block_t* p) {
     lh->unused = p->unused;
 }
 
-/*
-Resolve the register assigned to a LIR subject.
+/* Resolve the register assigned to a LIR subject.
 Params:
     - `s` - LIR subject to inspect.
     - `colors` - Map from variable ids to allocated registers.
     - `reg` - Output register.
 
-Returns 1 if register was resolved, otherwise 0.
-*/
+Returns 1 if register was resolved, otherwise 0. */
 static int _subj_reg(lir_subject_t* s, map_t* colors, lir_registers_t* reg) {
     if (!s) return 0;
     if (s->t == LIR_VARIABLE) {
@@ -229,16 +220,14 @@ static int _subj_reg(lir_subject_t* s, map_t* colors, lir_registers_t* reg) {
     return 0;
 }
 
-/*
-Check whether a copy destination is still needed as a source by another
+/* Check whether a copy destination is still needed as a source by another
 pending phi copy.
 Params:
     - `copies` - Phi copy array.
     - `n` - Number of phi copies.
     - `i` - Copy index to check.
 
-Returns 1 if destination register is used as a pending source, otherwise 0.
-*/
+Returns 1 if destination register is used as a pending source, otherwise 0. */
 static int _dst_used_as_src(phi_copy_t* copies, int n, int i) {
     for (int j = 0; j < n; j++) {
         if (i == j || copies[j].done) continue;
@@ -248,16 +237,14 @@ static int _dst_used_as_src(phi_copy_t* copies, int n, int i) {
     return 0;
 }
 
-/*
-Sort an array of phi moves so each move is emitted after all reads of its
+/* Sort an array of phi moves so each move is emitted after all reads of its
 destination register are finished.
 Params:
     - `nodes` - Phi move nodes to reorder.
     - `n` - Number of nodes.
     - `colors` - Map from variable ids to allocated registers.
 
-Returns 1 if sorting succeeds, otherwise 0.
-*/
+Returns 1 if sorting succeeds, otherwise 0. */
 static int _sort_phi_array(lir_block_t** nodes, int n, map_t* colors) {
     phi_copy_t* copies = (phi_copy_t*)mm_malloc(sizeof(phi_copy_t) * n);
     if (!copies) return 0;
@@ -303,15 +290,13 @@ static int _sort_phi_array(lir_block_t** nodes, int n, map_t* colors) {
     return 1;
 }
 
-/*
-Sort a contiguous group of phi moves.
+/* Sort a contiguous group of phi moves.
 Params:
     - `first` - First phi move in the group.
     - `last` - Block after the last phi move.
     - `colors` - Map from variable ids to allocated registers.
 
-Returns 1 if sorting succeeds, otherwise 0.
-*/
+Returns 1 if sorting succeeds, otherwise 0. */
 static int _sort_phi_group(lir_block_t* first, lir_block_t* last, map_t* colors) {
     if (!first || first == last) return 1;
 

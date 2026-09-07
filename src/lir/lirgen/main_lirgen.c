@@ -72,12 +72,8 @@ static int _convert_hir_to_lir(sstack_t* params, hir_block_t* h, lir_ctx_t* ctx,
         case HIR_FDCL:         return LIR_BLOCK1(ctx, LIR_FDCL, LIR_SUBJ_FUNCNAME(h->farg));
         case HIR_FRET:         return LIR_BLOCK1(ctx, LIR_FRET, _convert_hs_to_ls(h->farg));
         case HIR_FARGLD:       return LIR_BLOCK3(ctx, LIR_LOADFARG, _convert_hs_to_ls(h->farg), LIR_SUBJ_CONST(h->sarg->storage.cnst.value), LIR_SUBJ_CONST(h->targ->storage.cnst.value));
-        case HIR_UFCLL:
-        case HIR_FCLL:
-        case HIR_ECLL: 
-        case HIR_STORE_UFCLL:
-        case HIR_STORE_FCLL:
-        case HIR_STORE_ECLL: {
+        case HIR_UFCLL:       case HIR_FCLL:       case HIR_ECLL: 
+        case HIR_STORE_UFCLL: case HIR_STORE_FCLL: case HIR_STORE_ECLL: {
             lir_subject_t* sargs = LIR_SUBJ_LIST();
             _translate_params_list(LIR_STFARG, ctx, &h->targ->storage.list.h, &sargs->storage.list.h);
             LIR_BLOCK3(

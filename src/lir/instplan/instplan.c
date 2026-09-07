@@ -1,12 +1,10 @@
 #include <lir/instplan/instplan.h>
 
-/*
-Simple function for DAG creation.
+/* Simple function for DAG creation.
 Params:
     - lh - Base lir block instruction.
 
-Return instructions_dag_node_t* or NULL.
-*/
+Return instructions_dag_node_t* or NULL. */
 static instructions_dag_node_t* _create_dag_node(lir_block_t* lh) {
     instructions_dag_node_t* nd = (instructions_dag_node_t*)mm_malloc(sizeof(instructions_dag_node_t));
     if (!nd) return NULL;
@@ -16,15 +14,13 @@ static instructions_dag_node_t* _create_dag_node(lir_block_t* lh) {
     return nd;
 }
 
-/*
-Finds existed DAG node or creates a new one.
+/* Finds existed DAG node or creates a new one.
 Note: It tries to find an existed DAG first, then if it doesn't, creates a new one.
 Params:
     - lh - Base lir block instruction.
     - dag - DAG context.
 
-Return instructions_dag_node_t* or NULL.
-*/
+Return instructions_dag_node_t* or NULL. */
 static instructions_dag_node_t* _find_or_create_node(lir_block_t* lh, instructions_dag_t* dag) {
     if (!lh) return NULL;
     instructions_dag_node_t* prev;
@@ -39,14 +35,12 @@ static instructions_dag_node_t* _find_or_create_node(lir_block_t* lh, instructio
     return nd;
 }
 
-/*
-Start to search the first LIR_CMP command from the 'lh' point.
+/* Start to search the first LIR_CMP command from the 'lh' point.
 Params:
     - lh - Search start point.
     - exit - Search exit point.
 
-Return NULL if there is no LIR_CMP instruction.
-*/
+Return NULL if there is no LIR_CMP instruction. */
 static lir_block_t* _find_first_cmp(lir_block_t* lh, lir_block_t* exit) {
     while (lh) {
         if (lh->op == LIR_CMP) return lh;
@@ -57,15 +51,13 @@ static lir_block_t* _find_first_cmp(lir_block_t* lh, lir_block_t* exit) {
     return NULL;
 }
 
-/*
-Start to search the command with the 'trg' as a first argument.
+/* Start to search the command with the 'trg' as a first argument.
 Params:
     - lh - Search start point.
     - exit - Search exit point.
     - trg - Target first argument.
 
-Return NULL if there is no command with a first argument equal to 'trg'.
-*/
+Return NULL if there is no command with a first argument equal to 'trg'. */
 static lir_block_t* _find_src(lir_block_t* lh, lir_block_t* exit, lir_subject_t* trg) {
     while (lh) {
         if (lh->farg && LIR_subj_equals(lh->farg, trg)) return lh;
@@ -76,15 +68,13 @@ static lir_block_t* _find_src(lir_block_t* lh, lir_block_t* exit, lir_subject_t*
     return NULL;
 } 
 
-/*
-Link 'sub' to the source lir instruction.
+/* Link 'sub' to the source lir instruction.
 Note: This function will try to find a source instruction for 'sub' and then will link them.
 Params:
     - lh - Current location in BaseBlock.
     - sub - Target subject for the linking process.
     - bb - Current BaseBlock.
-    - dag - Instruction's DAG context.
-*/
+    - dag - Instruction's DAG context. */
 static void _link_subject_to_source(
     lir_block_t* lh, lir_subject_t* sub, cfg_block_t* bb, instructions_dag_t* dag
 ) {
@@ -99,15 +89,13 @@ static void _link_subject_to_source(
     }
 }
 
-/*
-Build an instruction DAG for the input BaseBlock.
+/* Build an instruction DAG for the input BaseBlock.
 Note: This function doesn't work outside of the 'bb' BaseBlock.
 Params:
     - bb - Current BaseBlock.
     - dag - Instruction DAG context.
 
-Returns 1 if DAG construction succeeds.
-*/
+Returns 1 if DAG construction succeeds. */
 static int _build_instructions_dag(cfg_block_t* bb, instructions_dag_t* dag) {
     iterate_lir_instructions (bb) {
         switch (lh->op) {
@@ -126,10 +114,10 @@ static int _build_instructions_dag(cfg_block_t* bb, instructions_dag_t* dag) {
                 break;
             }
             case LIR_iMOV:
-            case LIR_TI64: case LIR_TI32:  case LIR_TI16: case LIR_TI8:
-            case LIR_TU64: case LIR_TU32:  case LIR_TU16: case LIR_TU8:
+            case LIR_TI64: case LIR_TI32: case LIR_TI16: case LIR_TI8:
+            case LIR_TU64: case LIR_TU32: case LIR_TU16: case LIR_TU8:
             case LIR_TF64: case LIR_TF32:
-            case LIR_REF_GDREF: case LIR_REF:  
+            case LIR_REF_GDREF: case LIR_REF:
             case LIR_GDREF: case LIR_LDREF:  _link_subject_to_source(lh, lh->sarg, bb, dag); break;
             case LIR_VRUSE:
             case LIR_STSARG:
@@ -175,21 +163,11 @@ static int _build_instructions_dag(cfg_block_t* bb, instructions_dag_t* dag) {
 
                 break;
             }
-            case LIR_bOR:
-            case LIR_CMP:
-            case LIR_iLWR:
-            case LIR_iLRE:
-            case LIR_iLRG:
-            case LIR_iLGE:
-            case LIR_iCMP:
-            case LIR_iNMP:
-            case LIR_iDIV:
-            case LIR_iMOD:
-            case LIR_bXOR:
-            case LIR_bAND:
-            case LIR_iMUL:
-            case LIR_iSUB:
-            case LIR_iADD: {
+            case LIR_bOR:  case LIR_CMP:  case LIR_iLWR:
+            case LIR_iLRE: case LIR_iLRG: case LIR_iLGE:
+            case LIR_iCMP: case LIR_iNMP: case LIR_iDIV:
+            case LIR_iMOD: case LIR_bXOR: case LIR_bAND:
+            case LIR_iMUL: case LIR_iSUB: case LIR_iADD: {
                 lir_block_t* rax = _find_src(lh, bb->lmap.entry, lh->farg);
                 lir_block_t* rbx = _find_src(lh, bb->lmap.entry, lh->sarg);
                 instructions_dag_node_t* rax_nd = _find_or_create_node(rax, dag);
