@@ -15,31 +15,33 @@ The parser accepts `@[name]`, `@[name(value / variable)]` and `@[name(value / va
 
 | Annotation                                    | Applies to                                                       | Meaning                                                                                            |
 |-----------------------------------------------|------------------------------------------------------------------|----------------------------------------------------------------------------------------------------|
-| `@[entry]`, `@[entry("name")]`                | function or `start`                                              | mark the function as the program entry; without `name`, the configured entry symbol is used        |
-| `@[naked]`                                    | function or `start`                                              | suppress normal entry/exit routines                                                                |
-| `@[section("name")]`, `@[section("name", N)]` | global or read-only variable, global array, function, or `start` | place the symbol into a named section; optional `N` sets section alignment                         |
-| `@[nosection]`                                | global function                                                  | place the function into the configured no-section bucket                                           |
-| `@[align(N)]`                                 | variable, array, or container                                    | request memory/container alignment                                                                 |
 | `@[register(N)]`                              | variable declaration                                             | bind the variable to a target register index                                                       |
 | `@[poparg]`                                   | variable declaration in a variadic context                       | read the next variadic argument into this declaration                                              |
+| `@[not_null]`                                 | variable declaration                                             | mark a variable as an object that cannot store 0; CSA only, does not change compilation            |
+| `@[popreg(N)]`                                | variable declaration                                             | load a value form a register `N` to a variable                                                     |
+| `@[volatile]`                                 | variable declaration                                             | preserve variable from drop by compiler in result of an optimization                               |
+| `@[align(N)]`                                 | variable, array, or container                                    | request memory/container alignment                                                                 |
+| `@[section("name")]`, `@[section("name", N)]` | global or read-only variable, global array, function, or `start` | place the symbol into a named section; optional `N` sets section alignment                         |
+| `@[entry]`, `@[entry("name")]`                | function or `start`                                              | mark the function as the program entry; without `name`, the configured entry symbol is used        |
+| `@[naked]`                                    | function or `start`                                              | suppress normal entry/exit routines                                                                |
+| `@[nosection]`                                | global function                                                  | place the function into the configured no-section bucket                                           |
 | `@[inline]`                                   | function                                                         | increase the inliner preference                                                                    |
 | `@[inline(always)]`                           | function                                                         | force the inline decision toward always inline                                                     |
 | `@[inline(never)]`                            | function                                                         | force the inline decision toward never inline                                                      |
 | `@[inline(model)]`                            | function                                                         | use the model-based inline mode                                                                    |
 | `@[only_body]`                                | function                                                         | emit only the function body, without the normal label/export wrapper                               |
-| `@[self]`                                     | container function                                               | mark the function as an explicit-self method for container call rewriting                          |
 | `@[abi]`                                      | function                                                         | mark the function as ABI-compatible                                                                |
 | `@[weak]`                                     | function                                                         | mark the function as a weak symbol                                                                 |
 | `@[vname("symbol")]`                          | function                                                         | use an explicit backend/linker-visible symbol name without marking the function as the entry point |
+| `@[self]`                                     | container function                                               | mark the function as an explicit-self method for container call rewriting                          |
 | `@[like_c]`                                   | container                                                        | use C-like field layout handling instead of the requested CPL alignment value                      |
+| `@[union]`                                    | container                                                        | lay out all fields at offset zero and allocate enough memory for the largest field                 |
 | `@[no_fall]`                                  | `switch`                                                         | make switch cases behave as if they end with `break`                                               |
 | `@[straight]`                                 | `switch`                                                         | force linear switch selection                                                                      |
 | `@[counter(N, STP)]`                          | `loop`                                                           | generate a counted loop where 'STP' is optional                                                    |
 | `@[hot]`                                      | `if`                                                             | make the false branch cold for layout                                                              |
 | `@[cold]`                                     | `if` or switch `case`                                            | make the true branch, or the annotated case, cold for layout                                       |
 | `@[not_lazy]`                                 | logical expression                                               | evaluate both sides of `&&` or `\|\|`                                                              |
-| `@[union]`                                    | container                                                        | lay out all fields at offset zero and allocate enough memory for the largest field                 |
-| `@[not_null]`                                 | variable declaration                                             | mark a variable as an object that cannot store 0; CSA only, does not change compilation            |
 
 ## Entry, naked, sections
 
@@ -206,8 +208,15 @@ if (@[not_lazy] left() && right()); {
 `@[register(N)]` binds a variable to a target register index:
 
 ```cpl
-#define RAX 0
+#include <regs_h.cpl>
 @[register(RAX)] i64 value = 10;
+```
+
+`@[popreg(N)]` loads to a variable data from a register:
+
+```cpl
+#include <regs_h.cpl>
+@[popreg(RAX)] usize value;
 ```
 
 `@[poparg]` reads arguments from the current variadic call context:

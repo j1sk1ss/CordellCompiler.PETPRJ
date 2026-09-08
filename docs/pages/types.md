@@ -8,17 +8,20 @@ CPL's type system is intentionally small. The current language core consists of 
 |---|---|
 | `i8`, `i16`, `i32`, `i64` | signed integers |
 | `u8`, `u16`, `u32`, `u64` | unsigned integers |
+| `usize`, `isize`          | unsigned and signed maximum sized type (used when preprocessor is enabled) |
 | `f32`, `f64` | floating-point values |
 | `i0` | void-like type, mainly for function return types and `ptr i0` |
 
 Examples:
 
 ```cpl
-i8  c = 'A';
-u8  b = 0xFF;
-i32 x = 10 as i32;
-i64 y = 123456;
-f64 z = 0.25;
+i8  c      = 'A';
+u8  b      = 0xFF;
+i32 x      = 10 as i32;
+i64 y      = 123456;
+f64 z      = 0.25;
+usize umax = 0x01132;
+isize imax = 0xDEADBEEF;
 ```
 
 ## Static typing and casts
@@ -26,7 +29,7 @@ f64 z = 0.25;
 CPL is statically typed, but the compiler may insert implicit widening conversions. Narrowing conversions must be written explicitly with `as`.
 
 ```cpl
-i64 wide = 10;
+i64 wide  = 10;
 i8 narrow = wide as i8;
 ```
 
@@ -80,42 +83,24 @@ arr a[3, i8] = { 'A', 'B', 'C' };
 i8 second = a[1];
 ```
 
-Arrays can contain primitive types or pointers:
+Arrays can contain primitive types, pointers, containers and arrays:
 
 ```cpl
 arr row1[3, i32] = { 1, 2, 3 };
 arr row2[3, i32] = { 4, 5, 6 };
 arr rows[2, ptr i32] = { ref row1, ref row2 };
-
+arr matrix[4, arr[4, i32]];
 i32 x = rows[1][0];
 ```
 
 Global and read-only arrays are placed into target-dependent sections. Local arrays are allocated in function-local storage. </br>
 To store a string, use this form:
+
 ```cpl
 arr msg[0, i8] = "Hello world!";
 ```
 
 Initializer lists handle string literals as static data references. This is different from ordinary stack/runtime expressions: when a function expects `ptr i8`, write `ref "..."`; inside a global array or container initializer, write the string literal without `ref`.
-
-```cpl
-container message {
-    ptr i8 text;
-    arr inline_text[8, i8];
-}
-
-glob message msg = { "Hello", "World!" };
-
-function print(ptr i8 text) -> i0;
-
-start() {
-    print(ref "Hello from stack");
-}
-```
-
-In the initializer above, `text` receives a pointer to the generated static string, while `inline_text` is filled byte-by-byte because its field type is `arr [N, i8]`.
-
-When indexing an array whose element type is itself an array or a container, the indexed expression is already a reference to that element storage. For example, if `items` is an array of containers, `items[0]` can be passed where `ptr item` is expected; `ref items[0]` is not needed.
 
 ## Containers
 
@@ -144,6 +129,25 @@ l.color[0] = 255 as i8;
 ```
 
 Container functions can be regular functions, generic functions, or self-style methods with the `@[self]` annotation and an explicit pointer receiver. Implementations can live inside the container body or be provided later with `container_name::function_name`. See [Containers](#/pages/containers) for the full syntax and examples.
+
+```cpl
+container message {
+    ptr i8 text;
+    arr inline_text[8, i8];
+}
+
+glob message msg = { "Hello", "World!" };
+
+function print(ptr i8 text) -> i0;
+
+start() {
+    print(ref "Hello from stack");
+}
+```
+
+In the initializer above, `text` receives a pointer to the generated static string, while `inline_text` is filled byte-by-byte because its field type is `arr [N, i8]`.
+
+When indexing an array whose element type is itself an array or a container, the indexed expression is already a reference to that element storage. For example, if `items` is an array of containers, `items[0]` can be passed where `ptr item` is expected; `ref items[0]` is not needed.
 
 ## `glob`, `ro`, and `extern`
 

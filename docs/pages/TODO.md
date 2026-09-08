@@ -1,6 +1,7 @@
 # TODO
 
 ## Complete strict (strong) typing! (Completed)
+
 We need to complete strong typing support in the compiler. To do this, the compiler should allow function types:
 
 ```cpl
@@ -32,6 +33,7 @@ exit lamda(1, 1);
 ```
 
 ## Containers (Completed)
+
 The idea is to create structures with a few extra features. For instance, a container should be able to hold functions with explicit `self` argument support. CPL will therefore support syntax like this:
 ```cpl
 container storage {
@@ -105,6 +107,7 @@ container a {
 ```
 
 ## Simple polymorphic system (Completed)
+
 The idea is to create a placeholder type for local variables, then copy a function with the provided type. For instance, consider the function below:
 ```cpl
 function swap<T>(ptr T a, ptr T b) -> i0 {

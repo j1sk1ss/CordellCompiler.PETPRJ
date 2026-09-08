@@ -97,6 +97,13 @@ Remove a definition:
 #undef PRINT_H_
 ```
 
+### Pre-defines
+
+Pre-processor predefines several flags:
+- `CCPL_GNU64/CCPL_WINDOWS64/CCPL_MACHO64` flag
+- `usize` allias to the platform's biggest unsigned type
+- `isize` allias to the platform's biggest type
+
 ## Comments
 
 CPL uses colon comments:
