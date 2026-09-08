@@ -1,6 +1,7 @@
 #ifndef LIR_H_
 #define LIR_H_
 
+#include <utils.h>
 #include <position.h>
 #include <std/mm.h>
 #include <std/str.h>

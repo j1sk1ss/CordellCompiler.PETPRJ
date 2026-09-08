@@ -411,8 +411,7 @@ static cfg_dfs_action_t _instruction_selection_block(
 
                 break;
             }
-            case LIR_CMP: {
-                if (lh->farg->t == LIR_VARIABLE) break;
+            CONDITIONAL_CASE(LIR_CMP, lh->farg->t != LIR_VARIABLE) {
                 lir_subject_t* a = x86_64_macho_nasm_create_tmp(RAX, lh->farg, smt, -1);
                 _insert_instruction_before(bb, LIR_create_block(LIR_iMOV, a, lh->farg, NULL), lh);
                 lh->farg = a;

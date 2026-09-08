@@ -1,96 +1,40 @@
 #include <lir/lir_types.h>
 
 lir_registers_t LIR_format_register(lir_registers_t reg, int size) {
+#define CONVERTER(e, h, q, d)                           \
+    do {                                                \
+        if (size == CONF_get_full_bytness()) return e;  \
+        if (size == CONF_get_half_bytness()) return h;  \
+        if (size == CONF_get_quart_bytness()) return q; \
+        return d;                                       \
+    } while (0);
     switch (reg) {
         /* x86_64/32/16 */
-        case RAX: case EAX: case AX: case AL: case AH:
-            if (size == 8) return RAX;
-            if (size == 4) return EAX;
-            if (size == 2) return AX;
-            return AL;
-        case RBX: case EBX: case BX: case BL: case BH:
-            if (size == 8) return RBX;
-            if (size == 4) return EBX;
-            if (size == 2) return BX;
-            return BL;
-        case RCX: case ECX: case CX: case CL: case CH:
-            if (size == 8) return RCX;
-            if (size == 4) return ECX;
-            if (size == 2) return CX;
-            return CL;
-        case RDX: case EDX: case DX: case DL: case DH:
-            if (size == 8) return RDX;
-            if (size == 4) return EDX;
-            if (size == 2) return DX;
-            return DL;
-        case RSI: case ESI: case SI: case SIL:
-            if (size == 8) return RSI;
-            if (size == 4) return ESI;
-            if (size == 2) return SI;
-            return SIL;
-        case RDI: case EDI: case DI: case DIL:
-            if (size == 8) return RDI;
-            if (size == 4) return EDI;
-            if (size == 2) return DI;
-            return DIL;
-        case RBP: case EBP: case BP: case BPL:
-            if (size == 8) return RBP;
-            if (size == 4) return EBP;
-            if (size == 2) return BP;
-            return BPL;
-        case RSP: case ESP: case SP: case SPL:
-            if (size == 8) return RSP;
-            if (size == 4) return ESP;
-            if (size == 2) return SP;
-            return SPL;
-        case R8: case R8D: case R8W: case R8B:
-            if (size == 8) return R8; 
-            if (size == 4) return R8D;
-            if (size == 2) return R8W;
-            return R8B;
-        case R9: case R9D: case R9W: case R9B:
-            if (size == 8) return R9;
-            if (size == 4) return R9D;
-            if (size == 2) return R9W;
-            return R9B;
-        case R10: case R10D: case R10W: case R10B:
-            if (size == 8) return R10;
-            if (size == 4) return R10D;
-            if (size == 2) return R10W;
-            return R10B;
-        case R11: case R11D: case R11W: case R11B:
-            if (size == 8) return R11; 
-            if (size == 4) return R11D;
-            if (size == 2) return R11W;
-            return R11B;
-        case R12: case R12D: case R12W: case R12B:
-            if (size == 8) return R12;
-            if (size == 4) return R12D;
-            if (size == 2) return R12W;
-            return R12B;
-        case R13: case R13D: case R13W: case R13B:
-            if (size == 8) return R13;
-            if (size == 4) return R13D;
-            if (size == 2) return R13W;
-            return R13B;
-        case R14: case R14D: case R14W: case R14B:
-            if (size == 8) return R14;
-            if (size == 4) return R14D;
-            if (size == 2) return R14W;
-            return R14B;
-        case R15: case R15D: case R15W: case R15B:
-            if (size == 8) return R15;
-            if (size == 4) return R15D;
-            if (size == 2) return R15W;
-            return R15B;
+        case RAX: case EAX: case AX: case AL: case AH: CONVERTER(RAX, EAX, AX, AL);
+        case RBX: case EBX: case BX: case BL: case BH: CONVERTER(RBX, EBX, BX, BL);
+        case RCX: case ECX: case CX: case CL: case CH: CONVERTER(RCX, ECX, CX, CL);
+        case RDX: case EDX: case DX: case DL: case DH: CONVERTER(RDX, EDX, DX, DL);
+        case RSI: case ESI: case SI: case SIL:         CONVERTER(RSI, ESI, SI, SIL);
+        case RDI: case EDI: case DI: case DIL:         CONVERTER(RDI, EDI, DI, DIL);
+        case RBP: case EBP: case BP: case BPL:         CONVERTER(RBP, EBP, BP, BPL);
+        case RSP: case ESP: case SP: case SPL:         CONVERTER(RSP, ESP, SP, SPL);
+        case R8: case R8D: case R8W: case R8B:         CONVERTER(R8, R8D, R8W, R8B);
+        case R9: case R9D: case R9W: case R9B:         CONVERTER(R9, R9D, R9W, R9B);
+        case R10: case R10D: case R10W: case R10B:     CONVERTER(R10, R10D, R10W, R10B);
+        case R11: case R11D: case R11W: case R11B:     CONVERTER(R11, R11D, R11W, R11B);
+        case R12: case R12D: case R12W: case R12B:     CONVERTER(R12, R12D, R12W, R12B);
+        case R13: case R13D: case R13W: case R13B:     CONVERTER(R13, R13D, R13W, R13B);
+        case R14: case R14D: case R14W: case R14B:     CONVERTER(R14, R14D, R14W, R14B);
+        case R15: case R15D: case R15W: case R15B:     CONVERTER(R15, R15D, R15W, R15B);
         case XMM0: return XMM0;
         case XMM1: return XMM1;
         case XMM2: return XMM2;
         case XMM3: return XMM3;
         case XMM4: return XMM4;
+        /* RISC-V TODO */
         default: break;
     }
-
+#undef CONVERTER
     return reg;
 }
 
@@ -101,16 +45,13 @@ Params:
 Returns 1 if operation is a value-moving write, otherwise 0. */
 static int _is_move_write_by_value(lir_operation_t op) {
     switch (op) {
-        case LIR_NEG:
-        case LIR_NOT:
-        case LIR_aMOV:   case LIR_iMOV:   case LIR_MOVZX: case LIR_MOVSX:
-        case LIR_phiMOV: case LIR_MOVSXD: case LIR_fMOV:
+        case LIR_NEG:      case LIR_NOT:
+        case LIR_aMOV:     case LIR_iMOV:      case LIR_MOVZX:     case LIR_MOVSX:
+        case LIR_phiMOV:   case LIR_MOVSXD:    case LIR_fMOV:
         case LIR_XCHG:
-        case LIR_STARGLD:
-        case LIR_STARGRF:
-        case LIR_LOADFRET:
-        case LIR_LOADFARG:
-        case LIR_CVTSI2SS: case LIR_CVTSI2SD: case LIR_CVTSS2SD: 
+        case LIR_STARGLD:  case LIR_STARGRF:
+        case LIR_LOADFRET: case LIR_LOADFARG:
+        case LIR_CVTSI2SS: case LIR_CVTSI2SD:  case LIR_CVTSS2SD: 
         case LIR_CVTSD2SS: case LIR_CVTTSS2SI: case LIR_CVTTSD2SI: return 1;
         default: return 0;
     }
