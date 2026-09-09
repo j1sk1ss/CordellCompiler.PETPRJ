@@ -1,13 +1,11 @@
 #include <lir/constfold.h>
 
-/*
-Get the variable's ID and get the definition of the variable.
+/* Get the variable's ID and get the definition of the variable.
 Params:
     - `s` - LIR subject for constant fold.
     - `smt` - Symtable.
 
-Returns 1 if folding completed, otherwise 0.
-*/
+Returns 1 if folding completed, otherwise 0. */
 static int _apply_constfold_on_subject(lir_subject_t* s, sym_table_t* smt) {
     if (s->t != LIR_VARIABLE) return 0;
     if (ALLIAS_get_owners(s->storage.var.v_id, NULL, &smt->m)) return 0;

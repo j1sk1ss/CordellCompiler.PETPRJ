@@ -1,5 +1,66 @@
 # TODO
 
+## V-table in containers + interfaces
+
+To support some examples from OS-related code, we need to implement virtual table. The idea is to allocate an array of pointers in every instance of a cotainer, if it has linked functions. In a nutshell:
+
+```cpl
+cotainer std {
+    i32 a;
+    
+    @[self]
+    function init(ptr std self) -> i0;
+}
+
+function std::init(ptr std self) -> i0 {
+    self.a = 0;
+}
+
+start() {
+    std cnt;
+    cnt.init();
+    :/
+    In this case, the 'cnt' actually has the next structure:
+    container std {
+        arr vtable[1, ptr i0];
+        i32 a;
+    }
+
+    cnt.vtable[0] = std__init0;
+    cnt.vtable[0]();
+    /:
+}
+```
+
+This will allow us to implement actual inheretence:
+
+```cpl
+@[interface]
+container base {
+    @[self]
+    function init(ptr base self) -> i0; 
+}
+
+container std::base {
+    i32 a;
+    @[self]
+    function init(ptr std self) -> i0;
+}
+
+function foo(ptr base smth) -> i0 {
+    smth.init();
+    :/
+    Here we invoke the interface's function, and the difference here,
+    compiler doesn't invoke 'init', it invokes the first function in
+    a list of registered functions:
+    smth.vtable[0]();
+
+    And it doesn't care about the logic of this function, it just invokes
+    something by a pointer and passes something what was passed by a user.
+    /:
+}
+```
+
 ## Complete strict (strong) typing! (Completed)
 
 We need to complete strong typing support in the compiler. To do this, the compiler should allow function types:

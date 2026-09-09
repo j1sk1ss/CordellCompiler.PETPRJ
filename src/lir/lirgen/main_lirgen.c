@@ -83,7 +83,9 @@ static int _convert_hir_to_lir(sstack_t* params, hir_block_t* h, lir_ctx_t* ctx,
             );
 
             if (
-                h->op == HIR_STORE_UFCLL || h->op == HIR_STORE_FCLL || h->op == HIR_STORE_ECLL
+                h->op == HIR_STORE_UFCLL || 
+                h->op == HIR_STORE_FCLL  || 
+                h->op == HIR_STORE_ECLL
             ) LIR_BLOCK1(ctx, LIR_LOADFRET, _convert_hs_to_ls(h->farg));
             return 1;
         }
@@ -205,7 +207,7 @@ static int _iterate_block(sstack_t* params, cfg_block_t* bb, lir_ctx_t* ctx, sym
     }
 
     if (!bb->lmap.entry) bb->lmap.entry = ctx->h;
-    else bb->lmap.entry = bb->lmap.entry->next;
+    else                 bb->lmap.entry = bb->lmap.entry->next;
     bb->lmap.exit = ctx->t;
     return 1;
 }
