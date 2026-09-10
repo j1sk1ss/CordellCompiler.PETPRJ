@@ -225,12 +225,12 @@ static cfg_dfs_action_t _instruction_selection_block(
 
                 break;
             }
-            CONDITIONAL_CASE(LIR_CMP, lh->farg->t != LIR_VARIABLE) {
+            CONDITIONAL_CASE(LIR_CMP, lh->farg->t != LIR_VARIABLE,
                 lir_subject_t* a = i386_gnu_nasm_create_tmp(EAX, lh->farg, smt, -1);
                 _insert_instruction_before(bb, LIR_create_block(LIR_iMOV, a, lh->farg, NULL), lh);
                 lh->farg = a;
                 break;
-            }
+            )
             case LIR_iLWR: case LIR_iLRE: case LIR_iLRG: case LIR_iLGE:
             case LIR_iCMP: case LIR_iNMP: {
                 lir_subject_t* a   = i386_gnu_nasm_create_tmp(EAX, lh->sarg, smt, -1);

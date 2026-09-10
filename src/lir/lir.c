@@ -33,14 +33,14 @@ _variable_complete: {}
             subj->storage.str.rel = intval;
             break;
         }
-        CONDITIONAL_CASE(LIR_NUMBER, strval) { /* reg is used here as a flag which shows whether the number is float or not */
+        CONDITIONAL_CASE(LIR_NUMBER, strval, /* reg is used here as a flag which shows whether the number is float or not */
             subj->storage.num.is_float = reg ? 1 : 0;
             subj->storage.num.value = strval->copy(strval);
             break;
-        }
-        CONDITIONAL_CASE(LIR_FPOS, strval) {
+        )
+        CONDITIONAL_CASE(LIR_FPOS, strval,
             str_memcpy(&subj->storage.pos, strval, sizeof(file_position_t));
-        }
+        )
         default: break;
     }
 
@@ -74,11 +74,11 @@ lir_subject_t* LIR_copy_subject(lir_subject_t* s) {
             str_memcpy(&subj->storage, &s->storage, sizeof(s->storage));
             break;
         }
-        CONDITIONAL_CASE(LIR_NUMBER, s->storage.num.value) {
+        CONDITIONAL_CASE(LIR_NUMBER, s->storage.num.value,
             subj->storage.num.is_float = s->storage.num.is_float;
             subj->storage.num.value    = s->storage.num.value->copy(s->storage.num.value);
             break;
-        }
+        )
         default: break;
     }
 
