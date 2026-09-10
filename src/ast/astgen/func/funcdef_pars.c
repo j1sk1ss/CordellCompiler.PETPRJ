@@ -169,8 +169,10 @@ DEFINE_PARSER(cpl_parse_function, {
     );
     
     if (preserved_tid != NO_SYMBOL_ID) {
-        symbol_id_t type = TPTB_add_info_from_token(base->sinfo.s_id, base->t, base->c->sinfo.v_id, &smt->t);
+        symbol_id_t type = TPTB_add_info_from_token(base->sinfo.s_id, base->t, name->sinfo.v_id, &smt->t);
+        if (!TPTB_has_field(type, preserved_tid, &smt->t)) {
         TPTB_add_as_child(preserved_tid, type, name->t->body, SMT_NULL, &smt->t);
+        }
     }
 
     if (local) FNTB_add_local(ctx->carry.pfunc, name->sinfo.v_id, &smt->f);

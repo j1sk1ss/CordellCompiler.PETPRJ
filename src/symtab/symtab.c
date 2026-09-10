@@ -11,8 +11,8 @@ int SMT_init(sym_table_t* smt) {
            map_init(&smt->f.functb, MAP_NO_CMP) &&
            map_init(&smt->a.arrtb,  MAP_NO_CMP) &&
            map_init(&smt->m.allias, MAP_NO_CMP) &&
-           map_init(&smt->c.sectb,  MAP_NO_CMP) && list_init(&smt->c.sorted.sectb) &&
-           map_init(&smt->t.typetb, MAP_NO_CMP) &&
+           map_init(&smt->c.sectb,  MAP_NO_CMP) && list_init(&smt->c.sorted.sectb)      &&
+           map_init(&smt->t.typetb, MAP_NO_CMP) && map_init(&smt->t.membtb, MAP_NO_CMP) &&
            map_init(&smt->sc.parents, MAP_NO_CMP);
 }
 
