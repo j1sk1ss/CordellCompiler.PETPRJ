@@ -151,15 +151,16 @@ static ast_node_t* _parse_binary_expression(list_iter_t* it, ast_ctx_t* ctx, sym
                             type_info_t self_ti;
                             TPTB_get_info_id(left->self->sinfo.t_id, &self_ti, &smt->t);
                             variable_info_t self_vi;
+                            int self_is_field = left->self->t && left->self->t->t_type == MEMBER_ACCESS_TOKEN;
                             if (
                                 (
-                                    VRTB_find_by_type_id(self_ti.id, &self_vi, &smt->v) && !self_vi.vfs.ptr && 
-                                    self_ti.member.p != NO_SYMBOL_ID // TODO: This is redundant code. It was written back when type was a single entity. Now this is an abstraction which represents a big part of logic. 
-                                ) ||                                       // It's essential to get rid from this logic and move it to the smt as a separated structure which tracks these kinds of link
+                                    VRTB_find_by_type_id(self_ti.id, &self_vi, &smt->v) && !self_vi.vfs.ptr &&
+                                    self_is_field
+                                ) ||
                                 (
                                     !left->self->t->flags.ptr                 && /* If self doesn't referenced                       */
                                     left->self->t->t_type != INDEXATION_TOKEN && /* Any indexation operation already have referenced */
-                                    self_ti.member.p == NO_SYMBOL_ID             /* And this isn't a field in a container            */
+                                    !self_is_field                               /* And this isn't a field in a container            */
                                 )
                             ) WRAP_REFERENCE_NODE(left->self);
                             AST_insert_node(data, left->self);

@@ -1,12 +1,12 @@
 #include <lir/lir_types.h>
 
 lir_registers_t LIR_format_register(lir_registers_t reg, int size) {
-#define CONVERTER(e, h, q, d)                           \
-    do {                                                \
-        if (size == CONF_get_full_bytness()) return e;  \
-        if (size == CONF_get_half_bytness()) return h;  \
-        if (size == CONF_get_quart_bytness()) return q; \
-        return d;                                       \
+#define CONVERTER(e, h, q, d)          \
+    do {                               \
+        if (size == 8) return e;       \
+        if (size == 4) return h;       \
+        if (size == 2) return q;       \
+        return d;                      \
     } while (0);
     switch (reg) {
         /* x86_64/32/16 */

@@ -30,6 +30,8 @@
 #define NNULL_ANNOTATION_COMMAND "not_null"
 #define VOLAT_ANNOTATION_COMMAND "volatile"
 #define VTABL_ANNOTATION_COMMAND "vtable"
+#define ABSTR_ANNOTATION_COMMAND "abstract"
+#define OVERD_ANNOTATION_COMMAND "override"
 
 #define INLNE_ANNOTATION_COMMAND "inline" /* inline / inline(always) / inline(never) */
 #define INLNE_YES_OPTION         "always"
@@ -98,6 +100,8 @@ typedef struct {
     char                 is_notnull  : 1;
     char                 is_volatile : 1;
     char                 is_vtable   : 1;
+    char                 is_abstract : 1;
+    char                 is_override : 1;
 } annotations_summary_t;
 
 typedef enum {
@@ -127,6 +131,8 @@ typedef enum {
     NOTNULL_ANNOTATION,   /* Will mark a variable as a not Null variable    */
     VOLATILE_ANNOTATION,  /* Will mark variable as a important variable     */
     VTABLE_ANNOTATION,    /* Will enable vtable in a container              */
+    ABSTRACT_ANNOTATION,  /* Will mark a method as an abstract method       */
+    OVERRIDE_ANNOTAITON,  /* Will mark function as an override for somebody */
 } annotation_type_t;
 
 typedef struct {
@@ -144,9 +150,9 @@ typedef struct {
     } data;
 } annotation_t;
 
-int ANNOT_read_annotations(sstack_t* annots, annotations_summary_t* summary);
-int ANNOT_destroy_summary(annotations_summary_t* summray);
+int           ANNOT_read_annotations(sstack_t* annots, annotations_summary_t* summary);
+int           ANNOT_destroy_summary(annotations_summary_t* summray);
 annotation_t* ANNOT_create_annotation(annotation_type_t t, annotation_param_t* fp, annotation_param_t* sp);
-int ANNOT_destroy_annotation(annotation_t* annot);
+int           ANNOT_destroy_annotation(annotation_t* annot);
 
 #endif

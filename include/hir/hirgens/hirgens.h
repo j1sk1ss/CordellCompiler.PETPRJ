@@ -455,7 +455,7 @@ Find variable metadata for a concrete container field type.
 Uses the field owner and field name when the type belongs to a container,
 falling back to a type-only lookup for non-field types.
 */
-int HIR_find_member_variable(type_info_t* field_info, variable_info_t* var_info, sym_table_t* smt);
+int HIR_find_member_variable(type_info_t* field_info, symbol_id_t owner_id, string_t* name, variable_info_t* var_info, sym_table_t* smt);
 
 /*
 Syntheticly move a head towards the field (by sub-type Id).

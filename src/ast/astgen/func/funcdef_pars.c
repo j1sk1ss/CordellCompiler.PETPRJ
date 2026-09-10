@@ -121,8 +121,8 @@ DEFINE_PARSER(cpl_parse_function, {
         forward_token(it, 1);
         ret_type = AST_create_node(CURRENT_TOKEN);
         ret_type->sinfo.t_id = type_lookup(ret_type->t, ctx, smt);
-        if (ret_type->sinfo.t_id != NO_SYMBOL_ID) ret_type->t->t_type = EXTRACT_TYPE_TYPE(ret_type->sinfo.t_id, smt);
-        else ret_type->sinfo.t_id = TPTB_add_info_from_token(base->sinfo.s_id, ret_type->t, NO_SYMBOL_ID, &smt->t);
+        if (ret_type->sinfo.t_id != NO_SYMBOL_ID) ret_type->t->t_type  = EXTRACT_TYPE_TYPE(ret_type->sinfo.t_id, smt);
+        else                                      ret_type->sinfo.t_id = TPTB_add_info_from_token(base->sinfo.s_id, ret_type->t, NO_SYMBOL_ID, &smt->t);
         AST_add_node(name, ret_type);
         forward_token(it, 1);
     }
@@ -160,10 +160,11 @@ DEFINE_PARSER(cpl_parse_function, {
     name->sinfo.v_id = FNTB_add_info(
         name->t->body, virt_name, 
         (func_info_flags_t) {
-            .global  = base->t->flags.glob,            .local = local,            .entry    = annots.is_entry, 
-            .naked   = annots.is_naked ? 1 : 0,        .vargs = vargs,            .onlybody = annots.is_onlybody,
-            .generic = list_size(&generic_types) != 0, .inln  = annots.do_inline, .self     = annots.is_self, 
-            .abi     = annots.is_abi,                  .weak  = annots.is_weak,   .vname    = annots.is_vname
+            .global   = base->t->flags.glob,            .local    = local,            .entry    = annots.is_entry, 
+            .naked    = annots.is_naked ? 1 : 0,        .vargs    = vargs,            .onlybody = annots.is_onlybody,
+            .generic  = list_size(&generic_types) != 0, .inln     = annots.do_inline, .self     = annots.is_self, 
+            .abi      = annots.is_abi,                  .weak     = annots.is_weak,   .vname    = annots.is_vname,
+            .abstract = annots.is_abstract,             .override = annots.is_override
         },
         name->sinfo.s_id, args, ret_type, &smt->f
     );
@@ -171,6 +172,13 @@ DEFINE_PARSER(cpl_parse_function, {
     if (preserved_tid != NO_SYMBOL_ID) {
         symbol_id_t type = TPTB_add_info_from_token(base->sinfo.s_id, base->t, name->sinfo.v_id, &smt->t);
         if (!TPTB_has_field(type, preserved_tid, &smt->t)) {
+            if (
+                (annots.is_override || annots.is_abstract) && 
+                !list_size(&generic_types)
+            ) {
+                if (annots.is_override) TPTB_enable_vtable(preserved_tid, &smt->t); /* Enable virtual table for the container       */
+                TPTB_set_as_vtable_method(type, &smt->t);                           /* Link method to the container's virtual table */
+            }
             TPTB_add_as_child(preserved_tid, type, name->t->body, SMT_NULL, &smt->t);
         }
     }
@@ -200,6 +208,11 @@ DEFINE_PARSER(cpl_parse_function, {
         FNTB_update_func(name->sinfo.v_id, FNTB_ONLY_FLAGS(FNTB_SET_EXTERNAL(FNTB_SHALLOW_EXTERN)), &smt->f);
         return base;
     }
+
+    PARSER_ASSERT_DO(
+        annots.is_abstract, "Abstract function can have a body!", 
+        { AST_unload(base); list_free(&generic_types); stack_pop(&ctx->scopes.stack, NULL); }
+    );
 
     /* Implementation rewrites prototype's types */
     FNTB_clear_generic_types(name->sinfo.v_id, &smt->f);

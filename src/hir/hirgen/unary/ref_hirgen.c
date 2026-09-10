@@ -1,5 +1,15 @@
 #include <hir/hirgens/hirgens.h>
 
+static inline symbol_id_t _member_owner_id(ast_node_t* node) {
+    return node && node->c ? node->c->sinfo.t_id : NO_SYMBOL_ID;
+}
+
+static inline string_t* _member_name(ast_node_t* node) {
+    ast_node_t* owner = node ? node->c : NULL;
+    ast_node_t* name  = owner ? owner->siblings.n : NULL;
+    return name && name->t ? name->t->body : NULL;
+}
+
 hir_subject_t* HIR_reference_subject(hir_subject_t* src, sym_table_t* smt, int increment) {
     /* We need to dereference the type of an element, 
        if this is an array type. */
@@ -43,7 +53,7 @@ hir_subject_t* HIR_generate_ref(ast_node_t* node, hir_ctx_t* ctx, sym_table_t* s
         variable_info_t vi;
         if (
             ti.t == TYPE_ARRAY &&
-            HIR_find_member_variable(&ti, &vi, smt) &&
+            HIR_find_member_variable(&ti, _member_owner_id(node->c), _member_name(node->c), &vi, smt) &&
             ARTB_get_info(vi.v_id, &ai, &smt->a)
         ) return HIR_load_array_field_head(head, &ai, ctx, smt);
         return head;

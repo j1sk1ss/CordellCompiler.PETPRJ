@@ -120,7 +120,7 @@ static void _load_vtable(hir_subject_t* args, type_info_t* ti, hir_ctx_t* ctx, s
         func_info_t c_fi;
         if (
             TPTB_get_info_id(c, &c_ti, &smt->t) && c_ti.t == TYPE_METHOD && 
-            FNTB_get_info_id(c_ti.body.method.f_id, &c_fi, &smt->f) && c_fi.flags.self
+            FNTB_get_info_id(c_ti.body.method.f_id, &c_fi, &smt->f) && c_fi.flags.override
         ) {
             hir_subject_t* vtable_init = HIR_SUBJ_TMPVAR(HIR_STKVARI0, VRTB_add_info(NULL, TMP_I0_TYPE_TOKEN, NO_SYMBOL_ID, EMPTY_BASIC_FLAGS, &smt->v));
             vtable_init->ptr = 1;
