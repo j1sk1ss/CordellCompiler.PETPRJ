@@ -16,12 +16,6 @@ Params:
 Returns an AST node. */
 static ast_node_t* _parse_primary(list_iter_t*, ast_ctx_t*, sym_table_t*, int);
 
-#define WRAP_REFERENCE_NODE(nd) do {                                                          \
-        ast_node_t* __pp = AST_create_node_bt(TKN_create_token(REF_TYPE_TOKEN, "ref", NULL)); \
-        AST_add_node(__pp, nd);                                                               \
-        nd = __pp;                                                                            \
-    } while (0)
-
 /* Parse expression that looks like: <stmt> <op> <stmt>. 
 Note: <stmt> here can be either a simple <(a..> or a complex sub-stmt.
 Params:
@@ -148,22 +142,31 @@ static ast_node_t* _parse_binary_expression(list_iter_t* it, ast_ctx_t* ctx, sym
                         target = AST_create_node_bt(CREATE_CALL_TOKEN);
                         data   = cpl_parse_call_arguments(it, ctx, smt, 0);
                         if (left->self) {
+#define WRAP_REFERENCE_NODE(nd) do {                                                          \
+        ast_node_t* __pp = AST_create_node_bt(TKN_create_token(REF_TYPE_TOKEN, "ref", NULL)); \
+        AST_add_node(__pp, nd);                                                               \
+        nd = __pp;                                                                            \
+    } while (0)
+                            target->self = left->self;
                             type_info_t self_ti;
                             TPTB_get_info_id(left->self->sinfo.t_id, &self_ti, &smt->t);
                             variable_info_t self_vi;
-                            int has_self_vi = VRTB_find_by_type_id(self_ti.id, &self_vi, &smt->v);
+                            int self_is_field = left->self->t && left->self->t->t_type == MEMBER_ACCESS_TOKEN;
                             if (
-                                (has_self_vi && !self_vi.vfs.ptr && self_ti.member.p != NO_SYMBOL_ID) ||
                                 (
-                                    !left->self->t->flags.ptr &&                 /* If self doesn't referenced                       */
+                                    VRTB_find_by_type_id(self_ti.id, &self_vi, &smt->v) && !self_vi.vfs.ptr &&
+                                    self_is_field
+                                ) ||
+                                (
+                                    !left->self->t->flags.ptr                 && /* If self doesn't referenced                       */
                                     left->self->t->t_type != INDEXATION_TOKEN && /* Any indexation operation already have referenced */
-                                    self_ti.member.p == NO_SYMBOL_ID             /* And this isn't a field in a container            */
+                                    !self_is_field                               /* And this isn't a field in a container            */
                                 )
                             ) WRAP_REFERENCE_NODE(left->self);
                             AST_insert_node(data, left->self);
                             left->self = NULL;
                         }
-
+#undef WRAP_REFERENCE_NODE
                         break;
                     }
                     default: break;

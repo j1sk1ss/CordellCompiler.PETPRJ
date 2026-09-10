@@ -151,6 +151,14 @@ static ret_type_t _resolve_function_overload(hir_subject_t* callee, symbol_id_t 
     return info;
 }
 
+static inline hir_subject_t* _add_to_subject(hir_subject_t* src, sym_table_t* smt, int add, hir_ctx_t* ctx) {
+    hir_subject_t* add_subj = HIR_SUBJ_TMPVAR(
+        src->t, VRTB_add_info(NULL, HIR_get_tmptkn_type(src->t), NO_SYMBOL_ID, EMPTY_BASIC_FLAGS, &smt->v)
+    );
+    HIR_BLOCK3(ctx, HIR_iADD, add_subj, src, HIR_SUBJ_CONST(add));
+    return add_subj;
+}
+
 hir_subject_t* HIR_generate_funccall(ast_node_t* node, hir_ctx_t* ctx, sym_table_t* smt, int ret) {
     HIR_SET_CURRENT_POS(ctx, node);
     hir_subject_t* call_subj = NULL;
@@ -162,15 +170,29 @@ hir_subject_t* HIR_generate_funccall(ast_node_t* node, hir_ctx_t* ctx, sym_table
 
     ast_node_t* args_node = node->c->siblings.n->c;
     func_info_t fi = { 0 };
-    if (
+    if ( /* Get function from the expression */
         node->c->t->t_type != FUNC_NAME_TOKEN || 
         !FNTB_get_info_id(node->c->sinfo.v_id, &fi, &smt->f)
     ) call_subj = HIR_generate_elem(node->c, ctx, smt);
     else {
-        op        = fi.flags.external ? HIR_ECLL       : HIR_FCLL;
-        st_op     = fi.flags.external ? HIR_STORE_ECLL : HIR_STORE_FCLL;
-        call_subj = HIR_SUBJ_FUNCNAME(node->c);
-        if (node->c->sinfo.s_id != NO_SYMBOL_ID) fi.s_id = node->c->sinfo.s_id;
+        type_info_t self_ti;
+        int vtable_index;
+        if ( /* Get function from the virtual table */
+            node->self                                                                                     && 
+            TPTB_get_info_id(TPTB_resolve_parent(node->self->sinfo.t_id, &smt->t), &self_ti, &smt->t)      &&
+            ((vtable_index = TPTB_get_vtable_index(self_ti.id, node->c->sinfo.v_id, &smt->t)) != SMT_NULL) &&
+            self_ti.t == TYPE_CUSTOM && self_ti.body.custom.layout.vtable
+        ) {
+            hir_subject_t *self = HIR_SUBJ_ASTVAR(node->self), *ref_self = HIR_reference_subject(self, smt, 1);
+            HIR_BLOCK2(ctx, HIR_REF, ref_self, self);
+            call_subj = _add_to_subject(ref_self, smt, vtable_index * CONF_get_full_bytness(), ctx);
+        } /* Get function from the name */
+        else {
+            op        = fi.flags.external ? HIR_ECLL       : HIR_FCLL;
+            st_op     = fi.flags.external ? HIR_STORE_ECLL : HIR_STORE_FCLL;
+            call_subj = HIR_SUBJ_FUNCNAME(node->c);
+            if (node->c->sinfo.s_id != NO_SYMBOL_ID) fi.s_id = node->c->sinfo.s_id;
+        }
     }
     
     if (!call_subj) {

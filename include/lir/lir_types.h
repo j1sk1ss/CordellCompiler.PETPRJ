@@ -1,6 +1,8 @@
 #ifndef LIR_TYPES_H_
 #define LIR_TYPES_H_
 
+#include <config.h>
+
 typedef enum {
     /* Operations */
         /* Commands */

@@ -93,6 +93,7 @@ _set_vname: {}
             case ONLYBODY_ANNOTATION:  summary->is_onlybody  = 1;                   break;
             case NOTNULL_ANNOTATION:   summary->is_notnull   = 1;                   break;
             case VOLATILE_ANNOTATION:  summary->is_volatile  = 1;                   break;
+            case VTABLE_ANNOTATION:    summary->is_vtable    = 1;                   break;
             case REGISTER_ANNOTATION:  summary->reg          = annot->data.regval;  break;
             case COUNTER_ANNOTATION:   summary->counter      = annot->data.counter; break;
             default: break;

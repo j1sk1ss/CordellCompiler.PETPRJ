@@ -29,6 +29,7 @@
 #define VNAME_ANNOTATION_COMMAND "vname"
 #define NNULL_ANNOTATION_COMMAND "not_null"
 #define VOLAT_ANNOTATION_COMMAND "volatile"
+#define VTABL_ANNOTATION_COMMAND "vtable"
 
 #define INLNE_ANNOTATION_COMMAND "inline" /* inline / inline(always) / inline(never) */
 #define INLNE_YES_OPTION         "always"
@@ -96,6 +97,7 @@ typedef struct {
     char                 is_onlybody : 1;
     char                 is_notnull  : 1;
     char                 is_volatile : 1;
+    char                 is_vtable   : 1;
 } annotations_summary_t;
 
 typedef enum {
@@ -124,6 +126,7 @@ typedef enum {
     VNAME_ANNOTATION,     /* Will set a vartial name for a function         */
     NOTNULL_ANNOTATION,   /* Will mark a variable as a not Null variable    */
     VOLATILE_ANNOTATION,  /* Will mark variable as a important variable     */
+    VTABLE_ANNOTATION,    /* Will enable vtable in a container              */
 } annotation_type_t;
 
 typedef struct {
