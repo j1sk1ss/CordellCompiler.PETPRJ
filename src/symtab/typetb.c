@@ -180,6 +180,7 @@ static inline long _raw_type_size(type_info_t* info, int vtable) {
         case TYPE_CUSTOM: return info->body.custom.layout.size;
         case TYPE_ARRAY:  return info->body.array.size;
         case TYPE_METHOD: if (vtable) return CONF_get_full_bytness();
+                          __attribute__ ((fallthrough));
         case TYPE_GENERICS:
         case TYPE_SIGNATURE:
         default:          return SMT_NULL;
@@ -460,6 +461,16 @@ symbol_id_t TPTB_get_indexed_type(symbol_id_t id, typetab_ctx_t* ctx) {
     return NO_SYMBOL_ID;
 }
 
+int TPTB_set_as_vtable_method(symbol_id_t id, typetab_ctx_t* ctx) {
+    type_info_t* ti;
+    if (map_get(&ctx->typetb, id, (void**)&ti)) {
+        ti->body.method.in_vtable = 1;
+        return 1;
+    }
+
+    return 0;
+}
+
 int TPTB_add_as_child(symbol_id_t p_id, symbol_id_t c_id, string_t* name, long overrite_size, typetab_ctx_t* ctx) {
     if (p_id == NO_SYMBOL_ID) return 0;
     p_id = TPTB_resolve_parent(p_id, ctx);
@@ -618,7 +629,10 @@ int TPTB_get_vtable_index(symbol_id_t p_id, symbol_id_t f_id, typetab_ctx_t* ctx
                 c_ti->t == TYPE_METHOD                      &&
                 c_ti->body.method.f_id == f_id
             ) return i;
-            i++;
+            if (
+                c_ti->t == TYPE_METHOD &&
+                c_ti->body.method.in_vtable
+            ) i++;
         }
     }
 

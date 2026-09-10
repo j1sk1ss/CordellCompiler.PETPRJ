@@ -121,8 +121,8 @@ DEFINE_PARSER(cpl_parse_function, {
         forward_token(it, 1);
         ret_type = AST_create_node(CURRENT_TOKEN);
         ret_type->sinfo.t_id = type_lookup(ret_type->t, ctx, smt);
-        if (ret_type->sinfo.t_id != NO_SYMBOL_ID) ret_type->t->t_type = EXTRACT_TYPE_TYPE(ret_type->sinfo.t_id, smt);
-        else ret_type->sinfo.t_id = TPTB_add_info_from_token(base->sinfo.s_id, ret_type->t, NO_SYMBOL_ID, &smt->t);
+        if (ret_type->sinfo.t_id != NO_SYMBOL_ID) ret_type->t->t_type  = EXTRACT_TYPE_TYPE(ret_type->sinfo.t_id, smt);
+        else                                      ret_type->sinfo.t_id = TPTB_add_info_from_token(base->sinfo.s_id, ret_type->t, NO_SYMBOL_ID, &smt->t);
         AST_add_node(name, ret_type);
         forward_token(it, 1);
     }
@@ -172,6 +172,7 @@ DEFINE_PARSER(cpl_parse_function, {
         symbol_id_t type = TPTB_add_info_from_token(base->sinfo.s_id, base->t, name->sinfo.v_id, &smt->t);
         if (!TPTB_has_field(type, preserved_tid, &smt->t)) {
             TPTB_add_as_child(preserved_tid, type, name->t->body, SMT_NULL, &smt->t);
+            if (annots.is_self) TPTB_set_as_vtable_method(type, &smt->t);
         }
     }
 
