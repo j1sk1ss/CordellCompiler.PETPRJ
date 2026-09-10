@@ -20,14 +20,14 @@ hir_subject_t* HIR_reference_subject(hir_subject_t* src, sym_table_t* smt, int i
     symbol_id_t ref_id = VRTB_add_info(NULL, HIR_get_tmptkn_type(src_type), NO_SYMBOL_ID, EMPTY_BASIC_FLAGS, &smt->v);
     variable_info_t src_info;
     if (
-        HIR_is_vartype(src->t) &&
+        HIR_is_vartype(src->t)                                      &&
         VRTB_get_info_id(src->storage.var.v_id, &src_info, &smt->v) &&
         src_info.t_id != NO_SYMBOL_ID
     ) VRTB_update_type(ref_id, FIELD_NO_CHANGE, src_info.t_id, &smt->v);
 
     hir_subject_t* ref = HIR_SUBJ_TMPVAR(src_type, ref_id);
     if (increment) ref->ptr = MAX(src_ptr + 1, 0);
-    else ref->ptr = src_ptr;
+    else           ref->ptr = src_ptr;
     return ref;
 }
 

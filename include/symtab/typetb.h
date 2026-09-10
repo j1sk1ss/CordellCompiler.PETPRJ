@@ -44,8 +44,9 @@ typedef struct {
             struct {
                 long            size;
                 int             align;
-                int             multiple; // Is this is a union?
-                list_t          children;
+                int             multiple; // Is this a union?
+                signed char     vtable;   // Is this vtable container?
+                list_t          children; // @items: symbol_id_t
             } layout;
         } custom;
         /* Method type stores the pointer to the
@@ -68,12 +69,14 @@ typedef struct {
     map_t       typetb;
 } typetab_ctx_t;
 
+int          TPTB_has_field(symbol_id_t c_id, symbol_id_t p_id, typetab_ctx_t* ctx);
 symbol_id_t  TPTB_get_signature(list_t* args, symbol_id_t ret, typetab_ctx_t* ctx);
 symbol_id_t  TPTB_add_signature(list_t* args, symbol_id_t ret, typetab_ctx_t* ctx);
 symbol_id_t  TPTB_resolve_parent(symbol_id_t c, typetab_ctx_t* ctx);
-symbol_id_t  TPTB_add_info(string_t* name, symbol_id_t s_id, type_type_t t, int align, int multiple, typetab_ctx_t* ctx);
+symbol_id_t  TPTB_add_info(string_t* name, symbol_id_t s_id, type_type_t t, int align, int multiple, int vtable, typetab_ctx_t* ctx);
 symbol_id_t  TPTB_add_copy(symbol_id_t id, int ptr, typetab_ctx_t* ctx);
 symbol_id_t  TPTB_add_info_from_token(symbol_id_t s_id, token_t* t, symbol_id_t f_id, typetab_ctx_t* ctx);
+int          TPTB_get_vtable_index(symbol_id_t p_id, symbol_id_t f_id, typetab_ctx_t* ctx);
 long         TPTB_get_memory_size_id(symbol_id_t id, typetab_ctx_t* ctx);
 int          TPTB_set_memory_size_id(symbol_id_t id, long size, typetab_ctx_t* ctx);
 int          TPTB_set_child_scope_id(symbol_id_t id, symbol_id_t cs_id, typetab_ctx_t* ctx);

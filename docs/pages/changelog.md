@@ -3,6 +3,10 @@ Logs for the first and second versions are quite short because I do not remember
 
 ----------------------------------------
 
+## Virtual table in a container
+<div class="change-date">Date: 2026-09-10</div>
+Containers now have an opportunity to include a virtual table. This is a High IR concept which extends type size to store linked functions. At declaration, the compiler iterates thru linked methods and load them into this table. By default it's a hidden feature and won't change anything, but this is a base for future inheretance logic.
+
 ## Pop register and volatile
 <div class="change-date">Date: 2026-09-05</div>
 I've fixed some bugs with the pop register annotation and added the volatile annotation. At this point, this annotation only marks a variable as used before final optimizations, which preserves it from being deleted by the compiler. 

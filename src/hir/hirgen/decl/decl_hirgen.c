@@ -113,6 +113,23 @@ static int _arr_declaration(ast_node_t* node, hir_ctx_t* ctx, sym_table_t* smt) 
     return 1;
 }
 
+static void _load_vtable(hir_subject_t* args, type_info_t* ti, hir_ctx_t* ctx, sym_table_t* smt) {
+    hir_subject_t* entry_elem = list_get_head(&args->storage.list.h);
+    foreach (symbol_id_t c, &ti->body.custom.layout.children) {
+        type_info_t c_ti;
+        func_info_t c_fi;
+        if (
+            TPTB_get_info_id(c, &c_ti, &smt->t) && c_ti.t == TYPE_METHOD && 
+            FNTB_get_info_id(c_ti.body.method.f_id, &c_fi, &smt->f) && c_fi.flags.self
+        ) {
+            hir_subject_t* vtable_init = HIR_SUBJ_TMPVAR(HIR_STKVARI0, VRTB_add_info(NULL, TMP_I0_TYPE_TOKEN, NO_SYMBOL_ID, EMPTY_BASIC_FLAGS, &smt->v));
+            vtable_init->ptr = 1;
+            HIR_BLOCK2(ctx, HIR_STORE, vtable_init, HIR_SUBJ_FNAMETB(c_fi.id));
+            list_insert(&args->storage.list.h, vtable_init, entry_elem);
+        }
+    }
+}
+
 /* Generate allocation HIR for a custom container declaration.
 Params:
     - `node` - Declaration AST node.
@@ -120,17 +137,21 @@ Params:
     - `smt` - Symtable.
 
 Returns 1 if succeeds, otherwise 0. */
-static inline int _cnt_declaration(ast_node_t* node, hir_ctx_t* ctx, sym_table_t* smt) {
+static int _cnt_declaration(ast_node_t* node, hir_ctx_t* ctx, sym_table_t* smt) {
     ast_node_t* name  = node->c;
     ast_node_t* elems = name->siblings.n;
     type_info_t ti;
-    if (!TPTB_get_info_id(node->sinfo.t_id, &ti, &smt->t)) return 0;
+    if (!TPTB_get_info_id(TPTB_resolve_parent(node->sinfo.t_id, &smt->t), &ti, &smt->t)) return 0;
     variable_info_t vi;
     if (!VRTB_get_info_id(name->sinfo.v_id, &vi, &smt->v)) return 0;
-    HIR_BLOCK3(
-        ctx, HIR_ARRDECL, HIR_SUBJ_ASTVAR(node->c), HIR_SUBJ_CONST(TPTB_get_memory_size_id(ti.id, &smt->t)),
-        _generate_init_args(&vi, elems, ctx, smt, vi.vfs.glob || !TKN_in_stack(name->t))
-    );
+    hir_subject_t* init_args = _generate_init_args(&vi, elems, ctx, smt, vi.vfs.glob || !TKN_in_stack(name->t));
+    
+    if (
+        ti.t == TYPE_CUSTOM && init_args && 
+        ti.body.custom.layout.vtable
+    ) _load_vtable(init_args, &ti, ctx, smt);
+
+    HIR_BLOCK3(ctx, HIR_ARRDECL, HIR_SUBJ_ASTVAR(node->c), HIR_SUBJ_CONST(TPTB_get_memory_size_id(ti.id, &smt->t)), init_args);
     return 1;
 }
 
