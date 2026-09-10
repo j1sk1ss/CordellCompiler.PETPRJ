@@ -179,7 +179,10 @@ static inline long _raw_type_size(type_info_t* info, int vtable) {
         }
         case TYPE_CUSTOM: return info->body.custom.layout.size;
         case TYPE_ARRAY:  return info->body.array.size;
-        case TYPE_METHOD: if (vtable) return CONF_get_full_bytness();
+        case TYPE_METHOD: if (
+                              vtable && 
+                              info->body.method.in_vtable
+                          ) return CONF_get_full_bytness();
                           __attribute__ ((fallthrough));
         case TYPE_GENERICS:
         case TYPE_SIGNATURE:
@@ -465,6 +468,16 @@ int TPTB_set_as_vtable_method(symbol_id_t id, typetab_ctx_t* ctx) {
     type_info_t* ti;
     if (map_get(&ctx->typetb, id, (void**)&ti)) {
         ti->body.method.in_vtable = 1;
+        return 1;
+    }
+
+    return 0;
+}
+
+int TPTB_enable_vtable(symbol_id_t id, typetab_ctx_t* ctx) {
+    type_info_t* ti;
+    if (map_get(&ctx->typetb, id, (void**)&ti)) {
+        ti->body.custom.layout.vtable = 1;
         return 1;
     }
 

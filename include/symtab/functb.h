@@ -25,6 +25,8 @@ typedef struct {
     signed char inln;     /* 1, 2, 3 */ /* annot */
     signed char onlybody; /* annot     */
     signed char vname;    /* annot     */
+    signed char abstract; /* annot     */
+    signed char override; /* annot     */
 } func_info_flags_t;
 
 typedef struct {

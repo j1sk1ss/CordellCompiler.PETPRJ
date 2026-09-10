@@ -87,6 +87,7 @@ symbol_id_t  TPTB_add_info(string_t* name, symbol_id_t s_id, type_type_t t, int 
 symbol_id_t  TPTB_add_copy(symbol_id_t id, int ptr, typetab_ctx_t* ctx);
 symbol_id_t  TPTB_add_info_from_token(symbol_id_t s_id, token_t* t, symbol_id_t f_id, typetab_ctx_t* ctx);
 int          TPTB_set_as_vtable_method(symbol_id_t id, typetab_ctx_t* ctx);
+int          TPTB_enable_vtable(symbol_id_t id, typetab_ctx_t* ctx);
 int          TPTB_get_vtable_index(symbol_id_t p_id, symbol_id_t f_id, typetab_ctx_t* ctx);
 long         TPTB_get_memory_size_id(symbol_id_t id, typetab_ctx_t* ctx);
 int          TPTB_set_memory_size_id(symbol_id_t id, long size, typetab_ctx_t* ctx);

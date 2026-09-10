@@ -3,6 +3,48 @@ Logs for the first and second versions are quite short because I do not remember
 
 ----------------------------------------
 
+## @[override] and @[abstract] annotations
+Now a function can have these annotations, and they work actually the same as they do in another languages. For instance, if we have a prototype in a container:
+
+```cpl
+container base {
+    @[abstract] @[self]
+    function init(ptr base self) -> i0;
+}
+```
+
+The complier will put `init` to the virtual table (and will enable it for `base` either). But not in `base` instance, it's forbidden to create `base` instance, if it has `abstract` function. </br>
+Second annotation `@[override]` works pretty easy. If we have a container which should be used somewhere, where can be used its parent, and we want to use similar methods from a virtual table, we must annotate a function with this annotation:
+
+```cpl
+container base {
+    @[abstract] @[self]
+    function init(ptr base self) -> i0;
+}
+
+container instance::base {
+    i32 body;
+    @[override]
+    function init(ptr instance self) -> i0;
+}
+
+function instance::init(ptr instance self) -> i0 {
+    self.body = 0 as i32;
+}
+
+function pipe(ptr base b) -> i0 {
+    b.init();
+}
+
+start() {
+    instance i;
+    pipe(ref i);
+}
+```
+
+In this example, the compiler will put `init` somewhere in the `instance`s virtual table, and will do the same for all childrens of `base`. This allows to invoke `init` safely, because we known where this method is in the provided container. </br>
+**P.S.: Inheretence still in progress, I've implemented override and abstract for functions, not for containers.**
+
 ## Virtual table in a container
 <div class="change-date">Date: 2026-09-10</div>
 Containers now have an opportunity to include a virtual table. This is a High IR concept which extends type size to store linked functions. At declaration, the compiler iterates thru linked methods and load them into this table. By default it's a hidden feature and won't change anything, but this is a base for future inheretance logic.

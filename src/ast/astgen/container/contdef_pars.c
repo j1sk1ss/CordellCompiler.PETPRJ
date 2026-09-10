@@ -24,7 +24,7 @@ DEFINE_PARSER(cpl_parse_contdef, {
         name->t->body, name->sinfo.s_id, TYPE_CUSTOM, 
         annots.is_like_c ? SMT_NULL : annots.align, !annots.is_union, annots.is_vtable, &smt->t
     );
-    name->t->t_type  = CUSTOM_TYPE_TOKEN;
+    name->t->t_type = CUSTOM_TYPE_TOKEN;
 
     forward_token(it, 1);
     stack_push(&ctx->types, (void*)name->sinfo.t_id);
