@@ -3,7 +3,40 @@ Logs for the first and second versions are quite short because I do not remember
 
 ----------------------------------------
 
+## Strict vtable index and inheretance
+<div class="change-date">Date: 2026-09-11</div>
+Vtable methods now have a strict index in a virtual table. Also, container can inheret methods from another container, and given the strict indexing, it allows to use them in shared interfaces:
+
+```cpl
+container base {
+    @[abstract] @[self] function do(ptr base self) -> i0;
+}
+container first::base {
+    @[override] function do(ptr first self) -> i0 {
+    }
+}
+container second::base {
+    @[override] function do(ptr second self) -> i0 {
+    }
+}
+
+glob first f;
+glob second s;
+
+function easy(ptr base b) -> i0 {
+    b.do();
+}
+
+start() {
+    easy(ref f); :/ f.do() /:
+    easy(ref s); :/ s.do() /:
+}
+```
+
+These features aren't well tested and still in progress, which means I'd rather wait till they be complete than use them right now.
+
 ## @[override] and @[abstract] annotations
+<div class="change-date">Date: 2026-09-10</div>
 Now a function can have these annotations, and they work actually the same as they do in another languages. For instance, if we have a prototype in a container:
 
 ```cpl

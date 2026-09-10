@@ -1,4 +1,3 @@
-: REWRITE :
 @[vtable]
 container std {
     @[self]
@@ -24,7 +23,8 @@ start() {
     fn _main()
     {
         {
-            u8s %2 = arr_alloc(csu8 0);
+            i0t* %3 = init__std0(u8* self) -> i0;
+            u8s %2 = arr_alloc(csu8 8);
         }
     }
 }

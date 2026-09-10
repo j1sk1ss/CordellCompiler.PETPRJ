@@ -115,18 +115,46 @@ static int _arr_declaration(ast_node_t* node, hir_ctx_t* ctx, sym_table_t* smt) 
 
 static void _load_vtable(hir_subject_t* args, type_info_t* ti, hir_ctx_t* ctx, sym_table_t* smt) {
     hir_subject_t* entry_elem = list_get_head(&args->storage.list.h);
+    long slots = 0, fallback_index = 0;
     foreach (symbol_id_t c, &ti->body.custom.layout.children) {
         type_info_t c_ti;
-        func_info_t c_fi;
         if (
             TPTB_get_info_id(c, &c_ti, &smt->t) && c_ti.t == TYPE_METHOD && 
-            FNTB_get_info_id(c_ti.body.method.f_id, &c_fi, &smt->f) && c_fi.flags.override
+            c_ti.body.method.in_vtable
         ) {
-            hir_subject_t* vtable_init = HIR_SUBJ_TMPVAR(HIR_STKVARI0, VRTB_add_info(NULL, TMP_I0_TYPE_TOKEN, NO_SYMBOL_ID, EMPTY_BASIC_FLAGS, &smt->v));
+            long vtable_index = c_ti.body.method.vtable_index;
+            if (vtable_index == SMT_NULL) vtable_index = fallback_index;
+            if (vtable_index >= slots) slots = vtable_index + 1;
+            fallback_index++;
+        }
+    }
+
+    for (long slot = 0; slot < slots; slot++) {
+        hir_subject_t* vtable_init = NULL;
+        fallback_index = 0;
+        foreach (symbol_id_t c, &ti->body.custom.layout.children) {
+            type_info_t c_ti;
+            func_info_t c_fi;
+            if (
+                !TPTB_get_info_id(c, &c_ti, &smt->t) ||
+                c_ti.t != TYPE_METHOD               ||
+                !c_ti.body.method.in_vtable
+            ) continue;
+
+            long vtable_index = c_ti.body.method.vtable_index;
+            if (vtable_index == SMT_NULL) vtable_index = fallback_index;
+            fallback_index++;
+            if (vtable_index != slot) continue;
+            if (!FNTB_get_info_id(c_ti.body.method.f_id, &c_fi, &smt->f) || c_fi.flags.abstract) break;
+
+            vtable_init = HIR_SUBJ_TMPVAR(HIR_STKVARI0, VRTB_add_info(NULL, TMP_I0_TYPE_TOKEN, NO_SYMBOL_ID, EMPTY_BASIC_FLAGS, &smt->v));
             vtable_init->ptr = 1;
             HIR_BLOCK2(ctx, HIR_STORE, vtable_init, HIR_SUBJ_FNAMETB(c_fi.id));
-            list_insert(&args->storage.list.h, vtable_init, entry_elem);
+            break;
         }
+
+        if (!vtable_init) vtable_init = HIR_SUBJ_CONST(0);
+        list_insert(&args->storage.list.h, vtable_init, entry_elem);
     }
 }
 

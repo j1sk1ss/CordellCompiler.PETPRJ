@@ -49,11 +49,11 @@ start() {
         u8s* %3 = alloc;
         u8s* %3 = load_arg();
         {
-            u8t* %5 = u8s* %3 + csu8 0;
+            u8t* %5 = u8s* %3 + csu8 8;
             i32t* %6 = u8t* %5 as *ptr;
             i32t %7 = i8n 1 as i32;
             *(i32t* %6) = i32t %7;
-            u8t* %8 = u8s* %3 + csu8 24;
+            u8t* %8 = u8s* %3 + csu8 16;
             i32t* %9 = u8t* %8 as *ptr;
             i32t %10 = i8n 1 as i32;
             *(i32t* %9) = i32t %10;
@@ -63,7 +63,7 @@ start() {
     {
         {
             i0t* %11 = baz__simple2(u8* self) -> i0;
-            u8s %4 = arr_alloc(csu8 40);
+            u8s %4 = arr_alloc(csu8 24);
             foo__simple0();
             bar__simple1();
             u8t* %12 = &(u8s %4);

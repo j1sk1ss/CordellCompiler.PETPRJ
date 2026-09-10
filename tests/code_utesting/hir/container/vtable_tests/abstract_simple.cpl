@@ -12,7 +12,7 @@ start() {
     fn _main()
     {
         {
-            u8s %1 = arr_alloc(csu8 0);
+            u8s %1 = arr_alloc(csu8 8);
         }
     }
 }

@@ -172,13 +172,20 @@ DEFINE_PARSER(cpl_parse_function, {
     if (preserved_tid != NO_SYMBOL_ID) {
         symbol_id_t type = TPTB_add_info_from_token(base->sinfo.s_id, base->t, name->sinfo.v_id, &smt->t);
         if (!TPTB_has_field(type, preserved_tid, &smt->t)) {
+            type_info_t parent_ti;
+            int parent_has_vtable = (
+                TPTB_get_info_id(preserved_tid, &parent_ti, &smt->t) &&
+                parent_ti.t == TYPE_CUSTOM &&
+                parent_ti.body.custom.layout.vtable
+            );
             if (
-                (annots.is_override || annots.is_abstract) && 
+                (annots.is_override || annots.is_abstract || (annots.is_self && parent_has_vtable)) &&
                 !list_size(&generic_types)
             ) {
-                if (annots.is_override) TPTB_enable_vtable(preserved_tid, &smt->t); /* Enable virtual table for the container       */
-                TPTB_set_as_vtable_method(type, &smt->t);                           /* Link method to the container's virtual table */
+                TPTB_enable_vtable(preserved_tid, &smt->t);              /* Enable virtual table for the container       */
+                TPTB_set_as_vtable_method(preserved_tid, type, name->t->body, &smt->t); /* Link method to the container's virtual table */
             }
+
             TPTB_add_as_child(preserved_tid, type, name->t->body, SMT_NULL, &smt->t);
         }
     }
