@@ -149,7 +149,7 @@ static void _load_vtable(hir_subject_t* args, type_info_t* ti, hir_ctx_t* ctx, s
 
             vtable_init = HIR_SUBJ_TMPVAR(HIR_STKVARI0, VRTB_add_info(NULL, TMP_I0_TYPE_TOKEN, NO_SYMBOL_ID, EMPTY_BASIC_FLAGS, &smt->v));
             vtable_init->ptr = 1;
-            HIR_BLOCK2(ctx, HIR_STORE, vtable_init, HIR_SUBJ_FNAMETB(c_fi.id));
+            HIR_BLOCK2(ctx, HIR_REF, vtable_init, HIR_SUBJ_FNAMETB(c_fi.id));
             break;
         }
 
