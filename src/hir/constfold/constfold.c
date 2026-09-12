@@ -137,17 +137,16 @@ int HIR_sparse_const_propagation(dag_ctx_t* dctx, sym_table_t* smt) {
             }
             
             if (
-                !HIR_is_vartype(nd->src->t) /* If considered object isn't a variable  */
-            ) continue;                     /* We skip such variables / objects given */
-                                            /* the necessity of preserving over       */
-                                            /* 'inlining'.                            */
-
+                !HIR_is_vartype(nd->src->t)              /* If considered object isn't a variable     */
+            ) continue;                                  /* We skip such variables / objects given    */
+                                                         /* the necessity of preserving over          */
+                                                         /* 'inlining'.                               */
             const_t a, b;
             int a_pres = _parse_const(args[0], &a, smt);
             int b_pres = _parse_const(args[1], &b, smt);
-            if (!args[1]) {                                                  /* Parse constants, and if there is no       */
-                                                                             /* the second argument, copy value from the  */
-                                                                             /* first one.                                */
+            if (!args[1]) {                              /* Parse constants, and if there is no       */
+                                                         /* the second argument, copy value from the  */
+                                                         /* first one.                                */
                 str_memcpy(&b, &a, sizeof(const_t));
                 b_pres = 1;
             }

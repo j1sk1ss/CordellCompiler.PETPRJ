@@ -151,24 +151,6 @@ static ret_type_t _resolve_function_overload(hir_subject_t* callee, symbol_id_t 
     return info;
 }
 
-static inline hir_subject_t* _add_to_subject(hir_subject_t* src, sym_table_t* smt, int add, hir_ctx_t* ctx) {
-    hir_subject_t* add_subj = HIR_SUBJ_TMPVAR(
-        src->t, VRTB_add_info(NULL, HIR_get_tmptkn_type(src->t), NO_SYMBOL_ID, EMPTY_BASIC_FLAGS, &smt->v)
-    );
-    add_subj->ptr = src->ptr;
-    HIR_BLOCK3(ctx, HIR_iADD, add_subj, src, HIR_SUBJ_CONST(add));
-    return add_subj;
-}
-
-static inline hir_subject_t* _gdref_subject(hir_subject_t* src, sym_table_t* smt, hir_ctx_t* ctx) {
-    hir_subject_t* dref_subj = HIR_SUBJ_TMPVAR(
-        src->t, VRTB_add_info(NULL, HIR_get_tmptkn_type(src->t), NO_SYMBOL_ID, EMPTY_BASIC_FLAGS, &smt->v)
-    );
-    dref_subj->ptr = src->ptr - 1;
-    HIR_BLOCK2(ctx, HIR_GDREF, dref_subj, src);
-    return dref_subj;
-}
-
 hir_subject_t* HIR_generate_funccall(ast_node_t* node, hir_ctx_t* ctx, sym_table_t* smt, int ret) {
     HIR_SET_CURRENT_POS(ctx, node);
     hir_subject_t* call_subj = NULL;
@@ -195,7 +177,8 @@ hir_subject_t* HIR_generate_funccall(ast_node_t* node, hir_ctx_t* ctx, sym_table
         ) {
             hir_subject_t *self = HIR_SUBJ_ASTVAR(node->self), *ref_self = HIR_reference_subject(self, smt, 1);
             HIR_BLOCK2(ctx, HIR_REF, ref_self, self);
-            call_subj = _gdref_subject(_gdref_subject(_add_to_subject(ref_self, smt, vtable_index * CONF_get_full_bytness(), ctx), smt, ctx), smt, ctx);
+            call_subj = HIR_add_to_subject(ref_self, smt, vtable_index * CONF_get_full_bytness(), ctx);
+            while (call_subj->ptr > 0) call_subj = HIR_gdref_subject(call_subj, smt, ctx);
             call_subj->ptr = 1;
         } /* Get function from the name */
         else {

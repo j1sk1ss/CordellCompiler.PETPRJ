@@ -12,6 +12,7 @@
         "src/ast/astgen/*/*.c",
         "src/hir/*.c",
         "src/hir/dump/*.c",
+        "src/hir/hirgen/*.c",
         "src/hir/hirgen/*/*.c",
         "src/hir/ssa/*.c",
         "src/hir/cfg/*.c",

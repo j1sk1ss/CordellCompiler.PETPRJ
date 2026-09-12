@@ -83,12 +83,8 @@ hir_subject_t* HIR_point_to_field(ast_node_t* root, hir_ctx_t* ctx, type_info_t*
 
     long offset = TPTB_get_child_offset_name(_member_owner_id(root), _member_name(root), &smt->t);
     if (offset == SMT_NULL) offset = TPTB_get_child_offset(root->c->sinfo.t_id, root->sinfo.t_id, &smt->t);
-    hir_subject_t* real_offset = HIR_SUBJ_TMPVAR(HIR_STKVARU8, VRTB_add_info(NULL, TMP_U8_TYPE_TOKEN, NO_SYMBOL_ID, EMPTY_BASIC_FLAGS, &smt->v));
-    real_offset->ptr = base->ptr;
-
     TPTB_get_info_id(root->sinfo.t_id, field_info, &smt->t);
-    HIR_BLOCK3(ctx, HIR_iADD, real_offset, base, HIR_SUBJ_CONST(offset));
-    return real_offset;
+    return HIR_add_to_subject(base, smt, offset, ctx);
 }
 
 hir_subject_t* HIR_load_array_field_head(hir_subject_t* head, array_info_t* ai, hir_ctx_t* ctx, sym_table_t* smt) {
