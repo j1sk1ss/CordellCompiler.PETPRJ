@@ -42,8 +42,7 @@ Params:
     - `static_init` - Whether we're able to emit instructions for an element or not.
 
 Returns a HIR subject list with local initializer elements. */
-static hir_subject_t* _generate_init_args(variable_info_t* vi, ast_node_t* elems, hir_ctx_t* ctx, sym_table_t* smt, int static_init) {
-    hir_subject_t* init_elems = HIR_SUBJ_LIST();
+static hir_subject_t* _generate_init_args(variable_info_t* vi, ast_node_t* elems, hir_ctx_t* ctx, sym_table_t* smt, int static_init, hir_subject_t* init_elems) {
     if (!elems) return init_elems;
     for (ast_node_t* ast_el = elems->c; ast_el; ast_el = ast_el->siblings.n) {
         hir_subject_t* el = HIR_generate_elem(ast_el, ctx, smt);
@@ -107,14 +106,14 @@ static int _arr_declaration(ast_node_t* node, hir_ctx_t* ctx, sym_table_t* smt) 
             alloc_size = HIR_SUBJ_CONST(type_size);
         }
 
-        HIR_BLOCK3(ctx, HIR_ARRDECL, HIR_SUBJ_ASTVAR(name), alloc_size, _generate_init_args(&vi, elems, ctx, smt, vi.vfs.glob));
+        hir_subject_t* init_elems = HIR_SUBJ_LIST();
+        HIR_BLOCK3(ctx, HIR_ARRDECL, HIR_SUBJ_ASTVAR(name), alloc_size, _generate_init_args(&vi, elems, ctx, smt, vi.vfs.glob, init_elems));
     }
 
     return 1;
 }
 
-static void _load_vtable(hir_subject_t* args, type_info_t* ti, hir_ctx_t* ctx, sym_table_t* smt) {
-    hir_subject_t* entry_elem = list_get_head(&args->storage.list.h);
+static void _load_vtable(hir_subject_t* args, type_info_t* ti, hir_ctx_t* ctx, variable_info_t* vi, sym_table_t* smt) {
     long slots = 0, fallback_index = 0;
     foreach (symbol_id_t c, &ti->body.custom.layout.children) {
         type_info_t c_ti;
@@ -131,13 +130,14 @@ static void _load_vtable(hir_subject_t* args, type_info_t* ti, hir_ctx_t* ctx, s
 
     for (long slot = 0; slot < slots; slot++) {
         hir_subject_t* vtable_init = NULL;
+        int static_init = 0;
         fallback_index = 0;
         foreach (symbol_id_t c, &ti->body.custom.layout.children) {
             type_info_t c_ti;
             func_info_t c_fi;
             if (
                 !TPTB_get_info_id(c, &c_ti, &smt->t) ||
-                c_ti.t != TYPE_METHOD               ||
+                c_ti.t != TYPE_METHOD                ||
                 !c_ti.body.method.in_vtable
             ) continue;
 
@@ -147,14 +147,26 @@ static void _load_vtable(hir_subject_t* args, type_info_t* ti, hir_ctx_t* ctx, s
             if (vtable_index != slot) continue;
             if (!FNTB_get_info_id(c_ti.body.method.f_id, &c_fi, &smt->f) || c_fi.flags.abstract) break;
 
-            vtable_init = HIR_SUBJ_TMPVAR(HIR_STKVARI0, VRTB_add_info(NULL, TMP_I0_TYPE_TOKEN, NO_SYMBOL_ID, EMPTY_BASIC_FLAGS, &smt->v));
-            vtable_init->ptr = 1;
-            HIR_BLOCK2(ctx, HIR_REF, vtable_init, HIR_SUBJ_FNAMETB(c_fi.id));
+            if (vi->vfs.glob) {
+                ARTB_add_elems(vi->v_id, (array_elem_info_t){ .s.f_id = c_fi.id, .t = ARRAY_ELEM_FUNC_TYPE  }, &smt->a);
+                static_init = 1;
+            }
+            else {
+                vtable_init = HIR_SUBJ_TMPVAR(HIR_STKVARI0, VRTB_add_info(NULL, TMP_I0_TYPE_TOKEN, NO_SYMBOL_ID, EMPTY_BASIC_FLAGS, &smt->v));
+                vtable_init->ptr = 1;
+                HIR_BLOCK2(ctx, HIR_REF, vtable_init, HIR_SUBJ_FNAMETB(c_fi.id));
+            }
+
             break;
         }
 
-        if (!vtable_init) vtable_init = HIR_SUBJ_CONST(0);
-        list_insert(&args->storage.list.h, vtable_init, entry_elem);
+        if (vi->vfs.glob) {
+            if (!static_init) ARTB_add_elems(vi->v_id, (array_elem_info_t){ .s.f_id = NO_SYMBOL_ID, .t = ARRAY_ELEM_FUNC_TYPE  }, &smt->a);
+        }
+        else {
+            if (!vtable_init) vtable_init = HIR_SUBJ_CONST(0);
+            list_add(&args->storage.list.h, vtable_init);
+        }
     }
 }
 
@@ -172,14 +184,14 @@ static int _cnt_declaration(ast_node_t* node, hir_ctx_t* ctx, sym_table_t* smt) 
     if (!TPTB_get_info_id(TPTB_resolve_parent(node->sinfo.t_id, &smt->t), &ti, &smt->t)) return 0;
     variable_info_t vi;
     if (!VRTB_get_info_id(name->sinfo.v_id, &vi, &smt->v)) return 0;
-    hir_subject_t* init_args = _generate_init_args(&vi, elems, ctx, smt, vi.vfs.glob || !TKN_in_stack(name->t));
-    
-    if (
-        ti.t == TYPE_CUSTOM && init_args && 
-        ti.body.custom.layout.vtable
-    ) _load_vtable(init_args, &ti, ctx, smt);
 
-    HIR_BLOCK3(ctx, HIR_ARRDECL, HIR_SUBJ_ASTVAR(node->c), HIR_SUBJ_CONST(TPTB_get_memory_size_id(ti.id, &smt->t)), init_args);
+    hir_subject_t* init_elems = HIR_SUBJ_LIST();
+    if (
+        ti.t == TYPE_CUSTOM && init_elems && 
+        ti.body.custom.layout.vtable
+    ) _load_vtable(init_elems, &ti, ctx, &vi, smt);
+    _generate_init_args(&vi, elems, ctx, smt, vi.vfs.glob || !TKN_in_stack(name->t), init_elems);
+    HIR_BLOCK3(ctx, HIR_ARRDECL, HIR_SUBJ_ASTVAR(node->c), HIR_SUBJ_CONST(TPTB_get_memory_size_id(ti.id, &smt->t)), init_elems);
     return 1;
 }
 

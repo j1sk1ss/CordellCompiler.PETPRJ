@@ -59,6 +59,14 @@ static int _register_functions(call_graph_t* ctx, sym_table_t* smt) {
         _register_func(fi->id, ctx);
     }
 
+    map_foreach (array_info_t* ai, &smt->a.arrtb) {
+        foreach (array_elem_info_t* elem, &ai->elems) {
+            if (elem->t == ARRAY_ELEM_FUNC_TYPE && elem->s.f_id != NO_SYMBOL_ID) {
+                list_add(&ctx->entries, (void*)elem->s.f_id);
+            }
+        }
+    }
+
     return 1;
 }
 

@@ -84,14 +84,10 @@ DEFINE_PARSER(cpl_parse_function, {
             forward_token(it, 1);
             break;
         }
-        default: {
-            PARSE_ERROR("Expected either the 'OPEN_BRACKET_TOKEN' or 'LOWER_TOKEN' (<) tokens!");
-            AST_unload(base);
-            list_free(&generic_types);
-            stack_pop(&ctx->scopes.stack, NULL);
-            RESTORE_TOKEN_POINT;
-            return NULL;
-        }
+        default: PARSER_ASSERT_DO(
+            1, "Expected either the 'OPEN_BRACKET_TOKEN' or 'LOWER_TOKEN' (<) tokens!", 
+            { AST_unload(base); list_free(&generic_types); stack_pop(&ctx->scopes.stack, NULL); }
+        );
     }
 
     ast_node_t* args = AST_create_node_bt(CREATE_SCOPE_TOKEN);
@@ -106,7 +102,7 @@ DEFINE_PARSER(cpl_parse_function, {
     annotations_summary_t annots = { .section = NULL, .salign = SMT_NULL, .is_entry = 0, .is_naked = 0 };
     ANNOT_read_annotations(&ctx->annots, &annots);
 
-    symbol_id_t preserved_tid;
+    symbol_id_t preserved_tid = NO_SYMBOL_ID;
     stack_top(&ctx->types, (void**)&preserved_tid);
     stack_push(&ctx->types, (void*)NO_SYMBOL_ID);
 
@@ -138,9 +134,7 @@ DEFINE_PARSER(cpl_parse_function, {
 
     int vargs = 0;
     int local = ctx->carry.pfunc != NO_SYMBOL_ID ? 1 : 0;
-
-    ast_node_t* t;
-    for (t = args->c; t && t->t && t->t->t_type != SCOPE_TOKEN; t = t->siblings.n) {
+    for (ast_node_t* t = args->c; t && t->t && t->t->t_type != SCOPE_TOKEN; t = t->siblings.n) {
         if (t->t->t_type == VAR_ARGUMENTS_TOKEN) {
             vargs = 1;
             break;
@@ -244,8 +238,8 @@ DEFINE_PARSER(cpl_parse_function, {
     }
 
     PARSER_ASSERT_DO(
-        annots.is_abstract, "Abstract function can have a body!", 
-        { AST_unload(base); list_free(&generic_types); stack_pop(&ctx->scopes.stack, NULL); }
+        annots.is_abstract, "Abstract function can't have a body!", 
+        { AST_unload(base); list_free(&generic_types); stack_pop(&ctx->scopes.stack, NULL); stack_pop(&ctx->types, NULL); }
     );
 
     /* Implementation rewrites prototype's types */
@@ -258,7 +252,7 @@ DEFINE_PARSER(cpl_parse_function, {
     PRESERVE_AST_CARRY_ARG({ body = cpl_parse_scope(it, ctx, smt, 1); }, name->sinfo.v_id);
     PARSER_ASSERT_DO(
         !body, "Error during the function's body parsing!", 
-        { AST_unload(base); list_free(&generic_types); stack_pop(&ctx->scopes.stack, NULL); }
+        { AST_unload(base); list_free(&generic_types); stack_pop(&ctx->scopes.stack, NULL); stack_pop(&ctx->types, NULL); }
     );
     AST_add_node(args, body);
     

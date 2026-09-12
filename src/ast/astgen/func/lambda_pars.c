@@ -11,7 +11,7 @@ DEFINE_PARSER(cpl_parse_lambda, {
     stack_top(&ctx->scopes.stack, (void**)&base->sinfo.s_id);
     args->sinfo.s_id = SCPTB_push_scope(&smt->sc, &ctx->scopes.stack);
 
-    symbol_id_t preserved_tid;
+    symbol_id_t preserved_tid = NO_SYMBOL_ID;
     stack_top(&ctx->types, (void**)&preserved_tid);
     stack_push(&ctx->types, (void*)NO_SYMBOL_ID);
 

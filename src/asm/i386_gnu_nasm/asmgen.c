@@ -295,6 +295,10 @@ static int _generate_typed_initializer(variable_info_t* vi, array_info_t* ai, sy
                 else EMIT_COMMAND("dd _str_%li_", elem->s.s_id);
                 break;
             }
+            case ARRAY_ELEM_FUNC_TYPE: {
+                NASMFMT_emit_typed_func(output, NULL, slot_info.slot_size, elem->s.f_id, smt);
+                break;
+            }
             default: {
 _default_const_type: {}
                 _emit_typed_value(NULL, slot_info.slot_size, elem ? elem->s.value : 0, output);
@@ -363,6 +367,11 @@ static int _generate_variable(symbol_id_t id, sym_table_t* smt, FILE* output) {
                 last_elem = el;
                 switch (el->t) {
                     case ARRAY_ELEM_STRING_TYPE: fprintf(output, "_str_%li_", el->s.s_id); break;
+                    case ARRAY_ELEM_FUNC_TYPE: {
+                        char buffer[256] = { 0 };
+                        fprintf(output, "%s", NASMFMT_format_func_value(el->s.f_id, smt, buffer, sizeof(buffer)));
+                        break;
+                    }
                     default: fprintf(output, "%lli", el->s.value);                         break;
                 }
 
@@ -374,6 +383,11 @@ static int _generate_variable(symbol_id_t id, sym_table_t* smt, FILE* output) {
             while (last_el-- > 0) {
                 switch (last_elem ? last_elem->t : ARRAY_ELEM_CONST_TYPE) {
                     case ARRAY_ELEM_STRING_TYPE: fprintf(output, "_str_%li_", last_elem->s.s_id); break;
+                    case ARRAY_ELEM_FUNC_TYPE: {
+                        char buffer[256] = { 0 };
+                        fprintf(output, "%s", last_elem ? NASMFMT_format_func_value(last_elem->s.f_id, smt, buffer, sizeof(buffer)) : "0");
+                        break;
+                    }
                     default: fprintf(output, "%lli", last_elem ? last_elem->s.value : 0);         break;
                 }
 

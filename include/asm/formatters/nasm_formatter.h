@@ -4,6 +4,7 @@
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <symtab/symtab.h>
 
 static inline int _NASMFMT_is_space(char c) {
     return c == ' ' || c == '\t';
@@ -126,6 +127,23 @@ static inline void _NASMFMT_emit_part_command(FILE* output, const char* fmt, ...
 
 static inline void _NASMFMT_emit_data_label(FILE* output, const char* label) {
     _NASMFMT_emit_command(output, "%s:", label);
+}
+
+static inline const char* NASMFMT_format_func_value(symbol_id_t f_id, sym_table_t* smt, char* buffer, size_t size) {
+    func_info_t fi;
+    if (f_id == NO_SYMBOL_ID || !FNTB_get_info_id(f_id, &fi, &smt->f)) return "0";
+    if (fi.flags.entry || fi.flags.vname) snprintf(buffer, size, "%s", fi.virt->body);
+    else if (fi.flags.global || fi.flags.external) snprintf(buffer, size, "%s", fi.name->body);
+    else snprintf(buffer, size, "_cpl_%s", fi.virt->body);
+    return buffer;
+}
+
+static inline void NASMFMT_emit_typed_func(FILE* output, const char* name, long size, symbol_id_t f_id, sym_table_t* smt) {
+    const char* op = size == 8 ? "dq" : size == 4 ? "dd" : size == 2 ? "dw" : "db";
+    char buffer[256] = { 0 };
+    const char* value = NASMFMT_format_func_value(f_id, smt, buffer, sizeof(buffer));
+    if (name) _NASMFMT_emit_command(output, "%s %s %s", name, op, value);
+    else      _NASMFMT_emit_command(output, "%s %s", op, value);
 }
 
 #ifndef EMIT_COMMAND
