@@ -18,6 +18,7 @@
 #define CLOSE_BLOCK             "}"
 
 #define CONTAINER_COMMAND       "container"
+#define INTERFACE_COMMAND       "interface"
 #define DOT_COMMAND             "."
 #define STAT_COMMAND            "::"
 #define SELF_COMMAND            "self"

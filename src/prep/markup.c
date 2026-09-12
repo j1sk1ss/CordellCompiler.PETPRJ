@@ -23,6 +23,7 @@ static const markup_token_t _lexems[] = {
     LEXEM(CLOSE_BRACKET,          CLOSE_BRACKET_TOKEN),
 
     LEXEM(CONTAINER_COMMAND,      CONTAINER_TOKEN),
+    LEXEM(INTERFACE_COMMAND,      INTERFACE_TOKEN),
     LEXEM(DOT_COMMAND,            DOT_TOKEN),
     LEXEM(STAT_COMMAND,           STAT_TOKEN),
 

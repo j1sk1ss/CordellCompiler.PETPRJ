@@ -1,7 +1,7 @@
 : BLOCK_TEST :
 : RUN_ASM :
 
-container iface318 {
+interface iface318 {
     @[self] @[abstract]
     function value(ptr iface318 self) -> i32;
 }

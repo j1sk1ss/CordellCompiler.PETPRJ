@@ -77,7 +77,7 @@ DEFINE_PARSER(cpl_parse_function, {
         case LOWER_TOKEN: {
             forward_token(it, 1);
             do {
-                symbol_id_t t_id = TPTB_add_info(CURRENT_TOKEN->body, args_scope, TYPE_GENERICS, SMT_NULL, 0, 0, &smt->t);
+                symbol_id_t t_id = TPTB_add_info(CURRENT_TOKEN->body, args_scope, TYPE_GENERICS, SMT_NULL, 0, 0, 0, &smt->t);
                 if (t_id != NO_SYMBOL_ID) list_add(&generic_types, (void*)t_id);
                 if (consume_token(it, COMMA_TOKEN)) forward_token(it, 1);
             } while (CURRENT_TOKEN->t_type != LARGER_TOKEN);
@@ -157,6 +157,13 @@ DEFINE_PARSER(cpl_parse_function, {
         destroy_string(base_type);
     }
 
+    if (preserved_tid != NO_SYMBOL_ID) {
+        type_info_t parent_ti; /* Mark function abstract by default, if this is an interface */
+        if (TPTB_get_info_id(preserved_tid, &parent_ti, &smt->t)) {
+            annots.is_abstract = parent_ti.body.custom.layout.interface;
+        }
+    }
+
     name->sinfo.v_id = FNTB_add_info(
         name->t->body, virt_name, 
         (func_info_flags_t) {
@@ -173,16 +180,18 @@ DEFINE_PARSER(cpl_parse_function, {
         symbol_id_t type = TPTB_add_info_from_token(base->sinfo.s_id, base->t, name->sinfo.v_id, &smt->t);
         if (!TPTB_has_field(type, preserved_tid, &smt->t)) {
             type_info_t parent_ti;
-            int parent_has_vtable = (
-                TPTB_get_info_id(preserved_tid, &parent_ti, &smt->t) &&
-                parent_ti.t == TYPE_CUSTOM &&
-                parent_ti.body.custom.layout.vtable
-            );
-            if (
-                (annots.is_override || annots.is_abstract || (annots.is_self && parent_has_vtable)) &&
-                !list_size(&generic_types)
+            if ( /* this is an abstract / override method */
+                (annots.is_override || annots.is_abstract || 
+                (
+                    annots.is_self && 
+                    ( /* parent has a virtual table */
+                        TPTB_get_info_id(preserved_tid, &parent_ti, &smt->t) && 
+                        parent_ti.t == TYPE_CUSTOM && parent_ti.body.custom.layout.vtable
+                    )
+                )) &&
+                !list_size(&generic_types) /* This isn't a generic function */
             ) {
-                TPTB_enable_vtable(preserved_tid, &smt->t);              /* Enable virtual table for the container       */
+                TPTB_enable_vtable(preserved_tid, &smt->t);                             /* Enable virtual table for the container       */
                 TPTB_set_as_vtable_method(preserved_tid, type, name->t->body, &smt->t); /* Link method to the container's virtual table */
             }
 

@@ -93,6 +93,7 @@ typedef enum {
     ANNOTATION_TOKEN,      // @
 
     CONTAINER_TOKEN,       // container
+    INTERFACE_TOKEN,       // interface
     MEMBER_ACCESS_TOKEN,
     DOT_TOKEN,             // .
     STAT_TOKEN,            // ::

@@ -1,12 +1,12 @@
 : BLOCK_TEST :
 : RUN_ASM :
 
-container root321 {
+interface root321 {
     @[self] @[abstract]
     function value(ptr root321 self) -> i32;
 }
 
-container middle321::root321 {
+interface middle321::root321 {
 }
 
 container impl321::middle321 {

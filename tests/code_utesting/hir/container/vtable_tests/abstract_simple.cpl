@@ -1,10 +1,10 @@
-container interface {
+interface int {
     @[abstract] @[self]
-    function init(ptr interface self) -> i0;
+    function init(ptr int self) -> i0;
 }
 
 start() {
-    interface i;
+    int i;
 }
 
 :/ OUTPUT

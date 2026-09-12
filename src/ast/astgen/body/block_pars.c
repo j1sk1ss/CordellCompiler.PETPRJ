@@ -20,7 +20,7 @@ typedef struct {
 must handle the provided token.
 Note: ! If you're extending the parser, add a new handler here ! */
 static const handler_t handlers[] = {
-    HANDLER(cpl_parse_contdef,           0, CONTAINER_TOKEN),
+    HANDLER(cpl_parse_contdef,           0, CONTAINER_TOKEN, INTERFACE_TOKEN),
     HANDLER(cpl_parse_annot,             0, ANNOTATION_TOKEN),
     HANDLER(cpl_parse_start,             0, START_TOKEN),
     HANDLER(cpl_parse_asm,               0, ASM_TOKEN),

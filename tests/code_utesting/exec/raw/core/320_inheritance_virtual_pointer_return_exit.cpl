@@ -1,7 +1,7 @@
 : BLOCK_TEST :
 : RUN_ASM :
 
-container iface320 {
+interface iface320 {
     @[self] @[abstract]
     function marker(ptr iface320 self) -> ptr i8;
 }

@@ -365,7 +365,11 @@ symbol_id_t TPTB_add_signature(list_t* args, symbol_id_t ret, typetab_ctx_t* ctx
     return info->id;
 }
 
-symbol_id_t TPTB_add_info(string_t* name, symbol_id_t s_id, type_type_t t, int align, int multiple, int vtable, typetab_ctx_t* ctx) {
+symbol_id_t TPTB_add_info(
+    string_t* name, symbol_id_t s_id, type_type_t t, int align, 
+    int multiple, int vtable, int interface,
+    typetab_ctx_t* ctx
+) {
     if (TPTB_get_info(name, s_id, 0, NULL, ctx)) return NO_SYMBOL_ID;
     type_info_t* info = _create_type_info(name);
     if (!info) return NO_SYMBOL_ID;
@@ -375,9 +379,10 @@ symbol_id_t TPTB_add_info(string_t* name, symbol_id_t s_id, type_type_t t, int a
     _init_type_body(info, t, _default_token_type(t));
 
     if (t == TYPE_CUSTOM) {
-        info->body.custom.layout.align    = align;
-        info->body.custom.layout.multiple = multiple;
-        info->body.custom.layout.vtable   = vtable;
+        info->body.custom.layout.align     = align;
+        info->body.custom.layout.multiple  = multiple;
+        info->body.custom.layout.vtable    = vtable;
+        info->body.custom.layout.interface = interface;
     }
 
     map_put(&ctx->typetb, info->id, info);

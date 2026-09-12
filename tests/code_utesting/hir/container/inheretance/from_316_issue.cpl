@@ -1,4 +1,4 @@
-container base316 {
+interface base316 {
     @[self] @[abstract]
     function value(ptr base316 self) -> i32;
 }

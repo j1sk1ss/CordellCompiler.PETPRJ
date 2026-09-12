@@ -50,9 +50,10 @@ typedef struct {
             struct {
                 long            size;
                 int             align;
-                int             multiple; // Is this a union?
-                signed char     vtable;   // Is this vtable container?
-                list_t          children; // @items: symbol_id_t
+                int             multiple;  // Is this a union?
+                signed char     vtable;    // Is this vtable container?
+                signed char     interface; // Is this an interface
+                list_t          children;  // @items: symbol_id_t
             } layout;
         } custom;
         /* Method type stores the pointer to the
@@ -84,7 +85,7 @@ int          TPTB_is_member(symbol_id_t c_id, typetab_ctx_t* ctx);
 symbol_id_t  TPTB_get_signature(list_t* args, symbol_id_t ret, typetab_ctx_t* ctx);
 symbol_id_t  TPTB_add_signature(list_t* args, symbol_id_t ret, typetab_ctx_t* ctx);
 symbol_id_t  TPTB_resolve_parent(symbol_id_t c, typetab_ctx_t* ctx);
-symbol_id_t  TPTB_add_info(string_t* name, symbol_id_t s_id, type_type_t t, int align, int multiple, int vtable, typetab_ctx_t* ctx);
+symbol_id_t  TPTB_add_info(string_t* name, symbol_id_t s_id, type_type_t t, int align, int multiple, int vtable, int interface, typetab_ctx_t* ctx);
 symbol_id_t  TPTB_add_copy(symbol_id_t id, int ptr, typetab_ctx_t* ctx);
 symbol_id_t  TPTB_add_info_from_token(symbol_id_t s_id, token_t* t, symbol_id_t f_id, typetab_ctx_t* ctx);
 int          TPTB_set_as_vtable_method(symbol_id_t p_id, symbol_id_t id, string_t* name, typetab_ctx_t* ctx);

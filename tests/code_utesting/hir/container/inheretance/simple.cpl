@@ -1,4 +1,4 @@
-container base {
+interface base {
     @[self] @[abstract]
     function init(ptr base self) -> i0;
 }

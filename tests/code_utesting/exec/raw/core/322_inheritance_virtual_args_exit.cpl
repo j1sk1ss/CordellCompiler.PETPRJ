@@ -1,7 +1,7 @@
 : BLOCK_TEST :
 : RUN_ASM :
 
-container iface322 {
+interface iface322 {
     @[self] @[abstract]
     function mix(ptr iface322 self, i32 a, i32 b, i32 c) -> i32;
 }

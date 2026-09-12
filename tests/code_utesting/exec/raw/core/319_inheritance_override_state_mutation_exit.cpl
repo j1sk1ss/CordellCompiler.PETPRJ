@@ -1,7 +1,7 @@
 : BLOCK_TEST :
 : RUN_ASM :
 
-container iface319 {
+interface iface319 {
     @[self] @[abstract]
     function add(ptr iface319 self, i32 delta) -> i32;
 }
