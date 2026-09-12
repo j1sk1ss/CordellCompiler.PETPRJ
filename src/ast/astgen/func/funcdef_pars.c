@@ -191,8 +191,24 @@ DEFINE_PARSER(cpl_parse_function, {
                 )) &&
                 !list_size(&generic_types) /* This isn't a generic function */
             ) {
-                TPTB_enable_vtable(preserved_tid, &smt->t);                             /* Enable virtual table for the container       */
-                TPTB_set_as_vtable_method(preserved_tid, type, name->t->body, &smt->t); /* Link method to the container's virtual table */
+                TPTB_enable_vtable(preserved_tid, &smt->t);                                                       /* Enable virtual table for the container       */
+                symbol_id_t base_method = TPTB_set_as_vtable_method(preserved_tid, type, name->t->body, &smt->t); /* Link method to the container's virtual table */
+                if (base_method != SMT_NULL) {                                                                    /* Copy flags from a interface method           */
+                    type_info_t base_method_ti;
+                    func_info_t base_fi;
+                    if (
+                        TPTB_get_info_id(base_method, &base_method_ti, &smt->t) &&
+                        FNTB_get_info_id(base_method_ti.body.method.f_id, &base_fi, &smt->t)
+                    ) {
+                        func_info_flags_t base_flags = base_fi.flags;
+                        if (annots.is_override) {
+                            base_flags.abstract = 0;
+                            base_flags.override = 1;
+                        }
+                        
+                        FNTB_update_func(base_fi.id, FNTB_ONLY_FLAGS(base_flags), &smt->f);
+                    }
+                }
             }
 
             TPTB_add_as_child(preserved_tid, type, name->t->body, SMT_NULL, &smt->t);

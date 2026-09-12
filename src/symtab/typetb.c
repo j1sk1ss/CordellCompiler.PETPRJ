@@ -562,25 +562,23 @@ symbol_id_t TPTB_get_indexed_type(symbol_id_t id, typetab_ctx_t* ctx) {
     return NO_SYMBOL_ID;
 }
 
-int TPTB_set_as_vtable_method(symbol_id_t p_id, symbol_id_t id, string_t* name, typetab_ctx_t* ctx) {
+symbol_id_t TPTB_set_as_vtable_method(symbol_id_t p_id, symbol_id_t id, string_t* name, typetab_ctx_t* ctx) {
     p_id = TPTB_resolve_parent(p_id, ctx);
-
     type_info_t *p_ti, *ti;
     if (
         !map_get(&ctx->typetb, p_id, (void**)&p_ti) ||
         !map_get(&ctx->typetb, id, (void**)&ti)     ||
         p_ti->t != TYPE_CUSTOM                      ||
         ti->t != TYPE_METHOD
-    ) return 0;
+    ) return SMT_NULL;
 
     long vtable_index = SMT_NULL;
     member_info_t* inherited = _find_member_info(p_id, NO_SYMBOL_ID, name ? name : ti->name, ctx);
     if (inherited) vtable_index = _get_child_vtable_index(p_ti, inherited->child, ctx);
     if (vtable_index == SMT_NULL) vtable_index = _next_vtable_index(p_ti, ctx);
-
     ti->body.method.in_vtable    = 1;
     ti->body.method.vtable_index = vtable_index;
-    return 1;
+    return inherited->child;
 }
 
 int TPTB_enable_vtable(symbol_id_t id, typetab_ctx_t* ctx) {
@@ -628,9 +626,7 @@ int TPTB_add_as_child(symbol_id_t p_id, symbol_id_t c_id, string_t* name, long o
         }
 
         if (!_add_member_info(p_id, c_id, name, ctx)) return 0;
-
         list_add(&p_ti->body.custom.layout.children, (void*)c_id);
-
         if (overrite_size != FIELD_NO_CHANGE) {
             if (!c_ti->ptr) _set_type_size(c_ti, overrite_size);
         }

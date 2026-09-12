@@ -3,6 +3,27 @@ Logs for the first and second versions are quite short because I do not remember
 
 ----------------------------------------
 
+## Interfaces
+<div class="change-date">Date: 2026-09-12</div>
+Implement a new keyword: `interface`. It used for inheretance.
+
+```cpl
+interface base {
+    @[self]
+    function init(ptr base self) -> i0;
+}
+
+container implementation::base {
+    @[override]
+    function init(ptr implementation self) -> i0;
+}
+
+function implementation::init(ptr implementation self) -> i0 {
+}
+```
+
+Interfaces mark functions as abstract functions by default without `abstract` annotation.
+
 ## Strict vtable index and inheretance
 <div class="change-date">Date: 2026-09-11</div>
 Vtable methods now have a strict index in a virtual table. Also, container can inheret methods from another container, and given the strict indexing, it allows to use them in shared interfaces:
