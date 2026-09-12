@@ -160,6 +160,8 @@ Returns 1 on success, otherwise 0.
 */
 int FNTB_add_local(symbol_id_t f_id, symbol_id_t l_id, functab_ctx_t* ctx);
 
+int FNTB_rewrite_flags(symbol_id_t id, func_info_flags_t flags, functab_ctx_t* ctx);
+
 #define FNTB_ONLY_NAME(name)   name, FNTB_NO_FLAGS_CHANGE, NULL, NULL
 #define FNTB_ONLY_FLAGS(flags) NULL, flags, NULL, NULL
 #define FNTB_SHALLOW_EXTERN  2

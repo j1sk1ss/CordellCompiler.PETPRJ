@@ -578,7 +578,7 @@ symbol_id_t TPTB_set_as_vtable_method(symbol_id_t p_id, symbol_id_t id, string_t
     if (vtable_index == SMT_NULL) vtable_index = _next_vtable_index(p_ti, ctx);
     ti->body.method.in_vtable    = 1;
     ti->body.method.vtable_index = vtable_index;
-    return inherited->child;
+    return inherited ? inherited->child : SMT_NULL;
 }
 
 int TPTB_enable_vtable(symbol_id_t id, typetab_ctx_t* ctx) {

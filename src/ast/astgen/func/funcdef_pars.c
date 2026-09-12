@@ -182,31 +182,33 @@ DEFINE_PARSER(cpl_parse_function, {
             type_info_t parent_ti;
             if ( /* this is an abstract / override method */
                 (annots.is_override || annots.is_abstract || 
-                (
+                ( /* or parent has a virtual table */
                     annots.is_self && 
-                    ( /* parent has a virtual table */
+                    (
                         TPTB_get_info_id(preserved_tid, &parent_ti, &smt->t) && 
                         parent_ti.t == TYPE_CUSTOM && parent_ti.body.custom.layout.vtable
                     )
-                )) &&
-                !list_size(&generic_types) /* This isn't a generic function */
+                )) && /* This isn't a generic function */
+                !list_size(&generic_types)
             ) {
-                TPTB_enable_vtable(preserved_tid, &smt->t);                                                       /* Enable virtual table for the container       */
-                symbol_id_t base_method = TPTB_set_as_vtable_method(preserved_tid, type, name->t->body, &smt->t); /* Link method to the container's virtual table */
-                if (base_method != SMT_NULL) {                                                                    /* Copy flags from a interface method           */
-                    type_info_t base_method_ti;
-                    func_info_t base_fi;
-                    if (
-                        TPTB_get_info_id(base_method, &base_method_ti, &smt->t) &&
-                        FNTB_get_info_id(base_method_ti.body.method.f_id, &base_fi, &smt->t)
-                    ) {
-                        func_info_flags_t base_flags = base_fi.flags;
-                        if (annots.is_override) {
-                            base_flags.abstract = 0;
-                            base_flags.override = 1;
+                TPTB_enable_vtable(preserved_tid, &smt->t);                                                           /* Enable virtual table for the container       */
+                if (annots.is_override || annots.is_abstract) {
+                    symbol_id_t base_method = TPTB_set_as_vtable_method(preserved_tid, type, name->t->body, &smt->t); /* Link method to the container's virtual table */
+                    if (base_method != SMT_NULL) {                                                                    /* Copy flags from a interface method           */
+                        type_info_t base_method_ti;
+                        func_info_t base_fi;
+                        if (
+                            TPTB_get_info_id(base_method, &base_method_ti, &smt->t) &&
+                            FNTB_get_info_id(base_method_ti.body.method.f_id, &base_fi, &smt->f)
+                        ) {
+                            func_info_flags_t base_flags = base_fi.flags;
+                            if (annots.is_override) {
+                                base_flags.abstract = 0;
+                                base_flags.override = 1;
+                            }
+                            
+                            FNTB_rewrite_flags(name->sinfo.v_id, base_flags, &smt->f);
                         }
-                        
-                        FNTB_update_func(base_fi.id, FNTB_ONLY_FLAGS(base_flags), &smt->f);
                     }
                 }
             }

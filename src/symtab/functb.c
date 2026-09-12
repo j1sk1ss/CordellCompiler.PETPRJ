@@ -133,6 +133,17 @@ int FNTB_add_local(symbol_id_t f_id, symbol_id_t l_id, functab_ctx_t* ctx) {
     return 0;
 }
 
+int FNTB_rewrite_flags(symbol_id_t id, func_info_flags_t flags, functab_ctx_t* ctx) {
+    print_log("FNTB_rewrite_flags(id=%li)", id);
+    func_info_t* fi;
+    if (map_get(&ctx->functb, id, (void**)&fi)) {
+        fi->flags = flags;
+        return 1;
+    }
+
+    return 0;
+}
+
 int FNTB_update_func(
     symbol_id_t id, string_t* name, func_info_flags_t flags, ast_node_t* args, ast_node_t* rtype, functab_ctx_t* ctx
 ) {
@@ -153,6 +164,9 @@ int FNTB_update_func(
         if (flags.vargs != FIELD_NO_CHANGE)    fi->flags.vargs    = flags.vargs;
         if (flags.used != FIELD_NO_CHANGE)     fi->flags.used     = flags.used;
         if (flags.external != FIELD_NO_CHANGE) fi->flags.external = flags.external;
+        if (flags.self != FIELD_NO_CHANGE)     fi->flags.self     = flags.self;
+        if (flags.abstract != FIELD_NO_CHANGE) fi->flags.abstract = flags.abstract;
+        if (flags.override != FIELD_NO_CHANGE) fi->flags.override = flags.override;
         
         if (args) {
             AST_unload(fi->args);

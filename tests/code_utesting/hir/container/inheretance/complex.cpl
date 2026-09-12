@@ -1,7 +1,7 @@
 interface base {
-    @[self] @[abstract]
+    @[self]
     function init(ptr base self) -> i0;
-    @[self] @[abstract]
+    @[self]
     function destroy(ptr base self) -> i0;
 }
 
@@ -42,8 +42,10 @@ function easy(ptr base b) {
 start() {
     first f;
     second s;
-}
 
+    s.init();
+    s.foo();
+}
 
 :/ OUTPUT
 {
@@ -81,7 +83,7 @@ start() {
         u8s* %8 = alloc;
         u8s* %8 = load_arg();
         {
-            u8t* %20 = u8s* %8 + csu8 24;
+            u8t* %20 = u8s* %8 + csu8 16;
             i32t* %21 = u8t* %20 as *ptr;
             i32t %22 = i8n 0 as i32;
             *(i32t* %21) = i32t %22;
@@ -92,7 +94,7 @@ start() {
         u8s* %10 = alloc;
         u8s* %10 = load_arg();
         {
-            u8t* %23 = u8s* %10 + csu8 32;
+            u8t* %23 = u8s* %10 + csu8 24;
             i32t* %24 = u8t* %23 as *ptr;
             i32t %25 = i8n 0 as i32;
             *(i32t* %24) = i32t %25;
@@ -104,25 +106,32 @@ start() {
         u8s* %11 = load_arg();
         {
             u8t** %26 = &(u8s* %11);
-            u8t %27 = u8t** %26 + csu8 0;
+            u8t** %27 = u8t** %26 + csu8 0;
+            u8t* %28 = *(u8t** %27);
+            u8t* %29 = *(u8t* %28);
             use u8s* %11;
-            u8t %27(u8s* %11);
-            u8t** %28 = &(u8s* %11);
-            u8t %29 = u8t** %28 + csu8 8;
+            u8t* %29(u8s* %11);
+            u8t** %30 = &(u8s* %11);
+            u8t** %31 = u8t** %30 + csu8 8;
+            u8t* %32 = *(u8t** %31);
+            u8t* %33 = *(u8t* %32);
             use u8s* %11;
-            u8t %29(u8s* %11);
+            u8t* %33(u8s* %11);
         }
     }
     fn _main()
     {
         {
-            i0t* %30 = init__first3(u8* self) -> i0;
-            i0t* %31 = destroy__first2(u8* self) -> i0;
+            i0t* %34 = &(init__first3(u8* self) -> i0);
+            i0t* %35 = &(destroy__first2(u8* self) -> i0);
             u8s %12 = arr_alloc(csu8 32);
-            i0t* %32 = init__second5(u8* self) -> i0;
-            i0t* %33 = destroy__second6(u8* self) -> i0;
-            i0t* %34 = foo__second4(u8* self) -> i0;
-            u8s %13 = arr_alloc(csu8 40);
+            i0t* %36 = &(init__second5(u8* self) -> i0);
+            i0t* %37 = &(destroy__second6(u8* self) -> i0);
+            u8s %13 = arr_alloc(csu8 32);
+            init__second5();
+            u8t* %38 = &(u8s %13);
+            use u8t* %38;
+            foo__second4(u8t* %38);
         }
     }
 }
